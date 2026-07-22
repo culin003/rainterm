@@ -12,34 +12,35 @@ class RaindropTerminalPanelTest {
 
     @Test
     void testMenuTextMapping() throws Exception {
-        // 测试下划线清理和映射
         Field field = RaindropTerminalPanel.class.getDeclaredField("menuTextMap");
         field.setAccessible(true);
         @SuppressWarnings("unchecked")
         Map<String, String> map = (Map<String, String>) field.get(null);
 
-        // 验证映射存在
+        // 验证所有 10 个菜单项映射存在
+        assertEquals(10, map.size(), "Should have exactly 10 menu items");
+        assertTrue(map.containsKey("Open as URL"));
         assertTrue(map.containsKey("Copy"));
         assertTrue(map.containsKey("Paste"));
         assertTrue(map.containsKey("Select All"));
-        assertTrue(map.containsKey("Find..."));
+        assertTrue(map.containsKey("Find"));
         assertTrue(map.containsKey("Clear Buffer"));
-        assertTrue(map.containsKey("Reset"));
-        assertTrue(map.containsKey("Reset and Clear"));
-        assertTrue(map.containsKey("Dump Screen"));
-        assertTrue(map.containsKey("Close"));
+        assertTrue(map.containsKey("Page Up"));
+        assertTrue(map.containsKey("Page Down"));
+        assertTrue(map.containsKey("Line Up"));
+        assertTrue(map.containsKey("Line Down"));
     }
 
     @Test
     void testUnderlineRemovalAndTranslation() throws Exception {
         // 模拟带下划线的菜单项文本清理后翻译
-        String[] input = {"_Copy", "_Paste", "_Select All", "_Find...", "_Reset and Clear"};
+        String[] input = {"_Copy", "_Paste", "_Select All", "_Clear Buffer", "_Line Up"};
         String[] expectedKeys = {
             "terminal.copy",
             "terminal.paste",
             "terminal.select_all",
-            "terminal.find",
-            "terminal.reset_and_clear"
+            "terminal.clear_buffer",
+            "terminal.line_up"
         };
 
         Field field = RaindropTerminalPanel.class.getDeclaredField("menuTextMap");
@@ -50,13 +51,7 @@ class RaindropTerminalPanelTest {
         for (int i = 0; i < input.length; i++) {
             String cleaned = input[i].replace("_", "").trim();
             String key = map.get(cleaned);
-            // 如果精确匹配不到，尝试去掉省略号
-            if (key == null && cleaned.endsWith("...")) {
-                String base = cleaned.substring(0, cleaned.length() - 3).trim();
-                key = map.get(base);
-            }
             assertEquals(expectedKeys[i], key, "Key mismatch for: " + input[i]);
-            // 验证能获取到翻译文本
             assertNotNull(I18nManager.t(key), "Should get translation for: " + key);
         }
     }

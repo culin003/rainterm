@@ -16,8 +16,8 @@ class I18nManagerLanguageTest {
         assertEquals("复制", I18nManager.t("terminal.copy"));
         assertEquals("粘贴", I18nManager.t("terminal.paste"));
         assertEquals("全选", I18nManager.t("terminal.select_all"));
-        assertEquals("查找...", I18nManager.t("terminal.find"));
         assertEquals("清空缓冲区", I18nManager.t("terminal.clear_buffer"));
+        assertEquals("向上翻页", I18nManager.t("terminal.page_up"));
     }
 
     @Test

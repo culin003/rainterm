@@ -199,20 +199,15 @@
     "confirm_button": "Reset"
   },
   "terminal": {
+    "open_as_url": "Open as URL",
     "copy": "Copy",
     "paste": "Paste",
     "select_all": "Select All",
     "find": "Find...",
-    "find_next": "Find Next",
-    "find_previous": "Find Previous",
     "clear_buffer": "Clear Buffer",
-    "reset": "Reset",
-    "reset_and_clear": "Reset and Clear",
-    "dump_screen": "Dump Screen",
-    "page_setup": "Page Setup...",
-    "print": "Print...",
-    "show_history": "Show History...",
-    "scroll_to_bottom": "Scroll to Bottom",
-    "close": "Close"
+    "page_up": "Page Up",
+    "page_down": "Page Down",
+    "line_up": "Line Up",
+    "line_down": "Line Down"
   }
 }

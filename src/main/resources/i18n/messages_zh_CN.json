@@ -199,20 +199,15 @@
     "confirm_button": "重置"
   },
   "terminal": {
+    "open_as_url": "作为 URL 打开",
     "copy": "复制",
     "paste": "粘贴",
     "select_all": "全选",
     "find": "查找...",
-    "find_next": "查找下一个",
-    "find_previous": "查找上一个",
     "clear_buffer": "清空缓冲区",
-    "reset": "重置",
-    "reset_and_clear": "重置并清空",
-    "dump_screen": "导出屏幕",
-    "page_setup": "页面设置...",
-    "print": "打印...",
-    "show_history": "显示历史...",
-    "scroll_to_bottom": "滚动到底部",
-    "close": "关闭"
+    "page_up": "向上翻页",
+    "page_down": "向下翻页",
+    "line_up": "向上一行",
+    "line_down": "向下一行"
   }
 }

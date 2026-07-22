@@ -19,3 +19,13 @@ Thumbs.db
 # Logs / runtime
 *.log
 *.tmp
+
+# Raindrop runtime data (contains credentials)
+.raindrop/
+*.db
+*-shm
+*-wal
+*-journal
+
+# Encryption keys
+*.key

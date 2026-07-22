@@ -199,20 +199,15 @@
     "confirm_button": "重置"
   },
   "terminal": {
+    "open_as_url": "作為 URL 開啟",
     "copy": "複製",
     "paste": "貼上",
     "select_all": "全選",
     "find": "尋找...",
-    "find_next": "尋找下一筆",
-    "find_previous": "尋找上一筆",
     "clear_buffer": "清空緩衝區",
-    "reset": "重置",
-    "reset_and_clear": "重置並清空",
-    "dump_screen": "匯出畫面",
-    "page_setup": "頁面設定...",
-    "print": "列印...",
-    "show_history": "顯示歷史...",
-    "scroll_to_bottom": "捲動至底部",
-    "close": "關閉"
+    "page_up": "向上翻頁",
+    "page_down": "向下翻頁",
+    "line_up": "向上一行",
+    "line_down": "向下一行"
   }
 }

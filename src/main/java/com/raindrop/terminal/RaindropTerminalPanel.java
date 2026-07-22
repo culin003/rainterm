@@ -28,38 +28,16 @@ public class RaindropTerminalPanel extends TerminalPanel {
 
     private static final Map<String, String> menuTextMap = new HashMap<>();
     static {
-        // 标准菜单项
+        menuTextMap.put("Open as URL", "terminal.open_as_url");
         menuTextMap.put("Copy", "terminal.copy");
         menuTextMap.put("Paste", "terminal.paste");
         menuTextMap.put("Select All", "terminal.select_all");
-        menuTextMap.put("Find...", "terminal.find");
         menuTextMap.put("Find", "terminal.find");
         menuTextMap.put("Clear Buffer", "terminal.clear_buffer");
-        menuTextMap.put("Reset", "terminal.reset");
-        menuTextMap.put("Reset and Clear", "terminal.reset_and_clear");
-        menuTextMap.put("Reset and clear", "terminal.reset_and_clear");
-        menuTextMap.put("Reset And Clear", "terminal.reset_and_clear");
-        menuTextMap.put("Dump Screen", "terminal.dump_screen");
-        menuTextMap.put("Dump screen", "terminal.dump_screen");
-        menuTextMap.put("Close", "terminal.close");
-
-        // jeditermfx 其他菜单项 - 多种大小写变体
-        menuTextMap.put("Page Setup...", "terminal.page_setup");
-        menuTextMap.put("Page Setup", "terminal.page_setup");
-        menuTextMap.put("Print...", "terminal.print");
-        menuTextMap.put("Print", "terminal.print");
-        menuTextMap.put("Show History...", "terminal.show_history");
-        menuTextMap.put("Show History", "terminal.show_history");
-        menuTextMap.put("Scroll to Bottom", "terminal.scroll_to_bottom");
-        menuTextMap.put("Scroll to bottom", "terminal.scroll_to_bottom");
-        menuTextMap.put("Find Next", "terminal.find_next");
-        menuTextMap.put("Find next", "terminal.find_next");
-        menuTextMap.put("Find Previous", "terminal.find_previous");
-        menuTextMap.put("Find previous", "terminal.find_previous");
-
-        // 分隔符和其他可能的菜单项
-        menuTextMap.put("Separator", "terminal.separator");
-        menuTextMap.put("separator", "terminal.separator");
+        menuTextMap.put("Page Up", "terminal.page_up");
+        menuTextMap.put("Page Down", "terminal.page_down");
+        menuTextMap.put("Line Up", "terminal.line_up");
+        menuTextMap.put("Line Down", "terminal.line_down");
     }
 
     public RaindropTerminalPanel(SettingsProvider settings, TerminalTextBuffer buffer, StyleState style) {
