@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.raindrop"
-version = "0.1.0-SNAPSHOT"
+version = "0.1.0"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
