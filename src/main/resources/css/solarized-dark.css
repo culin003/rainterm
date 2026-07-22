@@ -1,0 +1,153 @@
+/*
+ * Raindrop — Solarized Dark theme
+ * Matches TerminalTheme.SOLARIZED_DARK (#002b36 / #839496)
+ */
+.root {
+    -fx-base: #002b36;
+    -fx-background: #002b36;
+    -fx-control-inner-background: #073642;
+    -fx-control-inner-background-alt: #094856;
+    -fx-accent: #2aa198;
+    -fx-focus-color: #2aa198;
+    -fx-faint-focus-color: #2aa19855;
+    -fx-text-background-color: #839496;
+    -fx-text-inner-color: #839496;
+    -fx-box-border: #073642;
+    -fx-outer-border: #073642;
+    -fx-selection-bar: #073642;
+    -fx-selection-bar-non-focused: #094856;
+}
+
+.label {
+    -fx-text-fill: #839496;
+}
+
+.button {
+    -fx-background-color: #073642;
+    -fx-border-color: #586e75;
+    -fx-border-width: 1px;
+    -fx-text-fill: #93a1a1;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+}
+.button:hover {
+    -fx-background-color: #094856;
+}
+.button:pressed {
+    -fx-background-color: #2aa198;
+    -fx-text-fill: #002b36;
+}
+
+.tool-bar {
+    -fx-background-color: #073642;
+    -fx-border-color: transparent transparent #002b36 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.text-field, .password-field, .combo-box, .choice-box, .spinner {
+    -fx-background-color: #002b36;
+    -fx-text-fill: #93a1a1;
+    -fx-prompt-text-fill: #586e75;
+    -fx-border-color: #586e75;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+}
+.text-field:focused, .password-field:focused, .combo-box:focused,
+.choice-box:focused, .spinner:focused {
+    -fx-border-color: #2aa198;
+}
+
+.list-view {
+    -fx-background-color: #073642;
+    -fx-border-color: #002b36;
+}
+.list-view .list-cell {
+    -fx-text-fill: #839496;
+    -fx-background-color: transparent;
+}
+.list-view .list-cell:filled:selected {
+    -fx-background-color: #2aa198;
+    -fx-text-fill: #002b36;
+}
+.list-view .list-cell:filled:hover {
+    -fx-background-color: #073642;
+}
+
+.tree-view {
+    -fx-background-color: #073642;
+}
+.tree-view .tree-cell {
+    -fx-text-fill: #839496;
+    -fx-background-color: transparent;
+}
+.tree-view .tree-cell:selected {
+    -fx-background-color: #2aa198;
+    -fx-text-fill: #002b36;
+}
+
+.tab-pane > .tab-header-area > .tab-header-background {
+    -fx-background-color: #002b36;
+}
+.tab-pane > .tab-header-area > .headers-region > .tab {
+    -fx-background-color: #073642;
+    -fx-border-color: transparent transparent #586e75 transparent;
+}
+.tab-pane > .tab-header-area > .headers-region > .tab:selected {
+    -fx-background-color: #073642;
+    -fx-border-color: #2aa198;
+    -fx-border-width: 0 0 2 0;
+}
+.tab-pane > .tab-header-area > .headers-region > .tab .tab-label {
+    -fx-text-fill: #586e75;
+}
+.tab-pane > .tab-header-area > .headers-region > .tab:selected .tab-label {
+    -fx-text-fill: #eee8d5;
+}
+
+.scroll-pane {
+    -fx-background-color: #002b36;
+}
+.scroll-bar {
+    -fx-background-color: #002b36;
+}
+.scroll-bar .thumb {
+    -fx-background-color: #586e75;
+    -fx-background-radius: 2;
+}
+
+.split-pane {
+    -fx-background: #002b36;
+}
+.split-pane-divider {
+    -fx-background-color: #073642;
+    -fx-padding: 0 1 0 0;
+}
+.split-pane-divider:hover {
+    -fx-background-color: #2aa198;
+}
+
+.status-bar {
+    -fx-background-color: #268bd2;
+    -fx-text-fill: #002b36;
+    -fx-padding: 4 10 4 10;
+}
+
+.progress-bar {
+    -fx-accent: #2aa198;
+}
+
+.separator {
+    -fx-background-color: transparent, transparent, #586e75, transparent;
+}
+
+.context-menu {
+    -fx-background-color: #073642;
+    -fx-border-color: #586e75;
+}
+.menu-item {
+    -fx-text-fill: #839496;
+}
+.menu-item:hover {
+    -fx-background-color: #2aa198;
+    -fx-text-fill: #002b36;
+}

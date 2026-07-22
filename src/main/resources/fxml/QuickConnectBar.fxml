@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<HBox fx:controller="com.raindrop.ui.QuickConnectBarController"
+      xmlns:fx="http://javafx.com/fxml"
+      spacing="5" alignment="CENTER_LEFT" style="-fx-background-color: -fx-control-inner-background;">
+    <padding><Insets top="4" right="6" bottom="4" left="6"/></padding>
+    <Label fx:id="quickConnectLabel" text="" style="-fx-font-weight: bold;"/>
+    <TextField fx:id="hostField" prefWidth="180"/>
+    <Label text=":"/>
+    <TextField fx:id="portField" prefWidth="55" text="22"/>
+    <TextField fx:id="userField" prefWidth="110"/>
+    <PasswordField fx:id="passField" prefWidth="130"/>
+    <Button fx:id="connectButton" text="" onAction="#onConnect" defaultButton="false"/>
+</HBox>

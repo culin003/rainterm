@@ -1,0 +1,183 @@
+/*
+ * Raindrop — Dark theme
+ * Matches TerminalTheme.DARK (#1e1e1e / #cccccc)
+ */
+.root {
+    -fx-base: #1e1e1e;
+    -fx-background: #1e1e1e;
+    -fx-control-inner-background: #252526;
+    -fx-control-inner-background-alt: #2d2d30;
+    -fx-accent: #4ec9b0;
+    -fx-focus-color: #4ec9b0;
+    -fx-faint-focus-color: #4ec9b055;
+    -fx-text-background-color: #cccccc;
+    -fx-text-inner-color: #cccccc;
+    -fx-box-border: #3c3c3c;
+    -fx-outer-border: #3c3c3c;
+    -fx-selection-bar: #264f78;
+    -fx-selection-bar-non-focused: #3a3d41;
+}
+
+.label {
+    -fx-text-fill: #cccccc;
+}
+
+.button {
+    -fx-background-color: #2d2d30;
+    -fx-border-color: #3c3c3c;
+    -fx-border-width: 1px;
+    -fx-text-fill: #cccccc;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+}
+.button:hover {
+    -fx-background-color: #3c3c3c;
+}
+.button:pressed {
+    -fx-background-color: #264f78;
+}
+
+.tool-bar {
+    -fx-background-color: #2d2d30;
+    -fx-border-color: transparent transparent #1e1e1e transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.text-field, .password-field, .combo-box, .choice-box, .spinner {
+    -fx-background-color: #3c3c3c;
+    -fx-text-fill: #cccccc;
+    -fx-prompt-text-fill: #808080;
+    -fx-border-color: #505050;
+    -fx-border-radius: 3;
+    -fx-background-radius: 3;
+}
+.text-field:focused, .password-field:focused, .combo-box:focused,
+.choice-box:focused, .spinner:focused {
+    -fx-border-color: #4ec9b0;
+}
+
+.list-view {
+    -fx-background-color: #252526;
+    -fx-border-color: #1e1e1e;
+}
+.list-view .list-cell {
+    -fx-text-fill: #cccccc;
+    -fx-background-color: transparent;
+}
+.list-view .list-cell:filled:selected {
+    -fx-background-color: #264f78;
+    -fx-text-fill: #ffffff;
+}
+.list-view .list-cell:filled:hover {
+    -fx-background-color: #2a4a6a;
+}
+
+.tree-view {
+    -fx-background-color: #252526;
+}
+.tree-view .tree-cell {
+    -fx-text-fill: #cccccc;
+    -fx-background-color: transparent;
+}
+.tree-view .tree-cell:selected {
+    -fx-background-color: #264f78;
+    -fx-text-fill: #ffffff;
+}
+
+.tab-pane > .tab-header-area > .tab-header-background {
+    -fx-background-color: #2d2d30;
+}
+.tab-pane > .tab-header-area > .headers-region > .tab {
+    -fx-background-color: #1e1e1e;
+    -fx-border-color: transparent transparent #3c3c3c transparent;
+}
+.tab-pane > .tab-header-area > .headers-region > .tab:selected {
+    -fx-background-color: #252526;
+    -fx-border-color: #4ec9b0;
+    -fx-border-width: 0 0 2 0;
+}
+.tab-pane > .tab-header-area > .headers-region > .tab .tab-label {
+    -fx-text-fill: #a0a0a0;
+}
+.tab-pane > .tab-header-area > .headers-region > .tab:selected .tab-label {
+    -fx-text-fill: #ffffff;
+}
+.tab-connected .tab-label { -fx-text-fill: #6bcf6b; }
+.tab-disconnected .tab-label { -fx-text-fill: #d9696f; }
+
+.scroll-pane {
+    -fx-background-color: #1e1e1e;
+}
+.scroll-bar {
+    -fx-background-color: #1e1e1e;
+}
+.scroll-bar .thumb {
+    -fx-background-color: #505050;
+    -fx-background-radius: 2;
+}
+.scroll-bar .thumb:hover {
+    -fx-background-color: #6a6a6a;
+}
+.scroll-bar .increment-button, .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #cccccc;
+}
+
+.split-pane {
+    -fx-background-color: #1e1e1e;
+    -fx-padding: 0;
+}
+.split-pane-divider {
+    -fx-background-color: #3c3c3c;
+    -fx-padding: 0 1 0 0;
+}
+.split-pane-divider:hover {
+    -fx-background-color: #4ec9b0;
+}
+
+.status-bar {
+    -fx-background-color: #007acc;
+    -fx-text-fill: #ffffff;
+    -fx-padding: 4 10 4 10;
+}
+
+.status-bar .label {
+    -fx-text-fill: #ffffff;
+}
+
+.memory-bar {
+    -fx-pref-height: 12;
+}
+
+.progress-bar {
+    -fx-accent: #4ec9b0;
+}
+
+.separator {
+    -fx-background-color: transparent, transparent, #3c3c3c, transparent;
+}
+
+.menu-bar {
+    -fx-background-color: #2d2d30;
+}
+.menu-bar .label {
+    -fx-text-fill: #cccccc;
+}
+
+.context-menu {
+    -fx-background-color: #252526;
+    -fx-border-color: #3c3c3c;
+}
+.menu-item {
+    -fx-text-fill: #cccccc;
+}
+.menu-item:hover {
+    -fx-background-color: #264f78;
+}
+
+.dialog-pane {
+    -fx-background-color: #252526;
+}
+.dialog-pane .label {
+    -fx-text-fill: #cccccc;
+}

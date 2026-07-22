@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.raindrop.ui.security.DestructiveResetController"
+            prefWidth="580" prefHeight="260" minWidth="500" minHeight="220">
+    <top>
+        <VBox spacing="8">
+            <padding><Insets top="20" right="20" bottom="8" left="20"/></padding>
+            <Label fx:id="titleLabel" text="" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;"/>
+            <Label fx:id="descriptionLabel" text="" wrapText="true"/>
+        </VBox>
+    </top>
+    <center>
+        <VBox spacing="10" alignment="CENTER">
+            <padding><Insets top="10" right="20" bottom="10" left="20"/></padding>
+            <TextField fx:id="confirmField" promptText=""/>
+            <Label fx:id="statusLabel" text=""/>
+        </VBox>
+    </center>
+    <bottom>
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <padding><Insets top="10" right="20" bottom="15" left="20"/></padding>
+            <Button fx:id="confirmButton" text="" disable="true"/>
+            <Button fx:id="cancelButton" text="" onAction="#onCancel" cancelButton="true"/>
+        </HBox>
+    </bottom>
+</BorderPane>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.raindrop.ui.SftpBrowserController">
+    <top>
+        <ToolBar>
+            <Label fx:id="localLabel" text=""/>
+            <TextField fx:id="localPathField" prefWidth="260"/>
+            <Button fx:id="localGoButton" text="" onAction="#onLocalGo"/>
+            <Separator/>
+            <Label fx:id="remoteLabel" text=""/>
+            <TextField fx:id="remotePathField" prefWidth="260" text="/"/>
+            <Button fx:id="remoteGoButton" text="" onAction="#onGo"/>
+            <Separator/>
+            <Button fx:id="uploadButton" text="" onAction="#onUpload"/>
+            <Button fx:id="downloadButton" text="" onAction="#onDownload"/>
+            <Separator/>
+            <Button fx:id="newFolderButton" text="" onAction="#onNewFolder"/>
+            <Button fx:id="renameButton" text="" onAction="#onRename"/>
+            <Button fx:id="deleteButton" text="" onAction="#onDelete"/>
+            <Separator/>
+            <Button fx:id="refreshButton" text="" onAction="#onRefresh"/>
+        </ToolBar>
+    </top>
+    <center>
+        <SplitPane dividerPositions="0.5">
+            <items>
+                <VBox>
+                    <Label fx:id="localFilesLabel" text="" style="-fx-font-weight: bold; -fx-padding: 5;"/>
+                    <ListView fx:id="localFileList" VBox.vgrow="ALWAYS"/>
+                </VBox>
+                <VBox>
+                    <Label fx:id="remoteFilesLabel" text="" style="-fx-font-weight: bold; -fx-padding: 5;"/>
+                    <ListView fx:id="remoteFileList" VBox.vgrow="ALWAYS"/>
+                </VBox>
+            </items>
+        </SplitPane>
+    </center>
+    <bottom>
+        <HBox spacing="10">
+            <padding><Insets top="5" right="5" bottom="5" left="5"/></padding>
+            <ProgressBar fx:id="progressBar" prefWidth="300" progress="0"/>
+            <Label fx:id="statusLabel" text=""/>
+        </HBox>
+    </bottom>
+</BorderPane>

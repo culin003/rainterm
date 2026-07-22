@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.raindrop.ui.SettingsViewController">
+    <center>
+        <GridPane hgap="10" vgap="10">
+            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+            <columnConstraints>
+                <ColumnConstraints minWidth="140" prefWidth="160"/>
+                <ColumnConstraints minWidth="220" prefWidth="260"/>
+            </columnConstraints>
+
+            <Label fx:id="themeLabel" text="" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="themeCombo" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+            <Label fx:id="fontSizeLabel" text="" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <Spinner fx:id="fontSizeSpinner" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+            <Label fx:id="encodingLabel" text="" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="encodingCombo" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+            <Label fx:id="languageLabel" text="" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="languageCombo" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+            <Label fx:id="widthLabel" text="" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+            <Spinner fx:id="widthSpinner" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+            <Label fx:id="heightLabel" text="" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+            <Spinner fx:id="heightSpinner" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+            <Label fx:id="idleTimeoutLabel" text="" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+            <HBox spacing="8" alignment="CENTER_LEFT" GridPane.rowIndex="6" GridPane.columnIndex="1">
+                <Spinner fx:id="idleTimeoutSpinner"/>
+                <Label fx:id="idleTimeoutHint" text="" style="-fx-text-fill: #888;"/>
+            </HBox>
+
+            <Label fx:id="masterPasswordLabel" text="" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+            <Button fx:id="changeMasterPasswordButton" text="" onAction="#onChangeMasterPassword" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+        </GridPane>
+    </center>
+    <bottom>
+        <HBox spacing="10" alignment="CENTER_RIGHT">
+            <padding><Insets top="10" right="20" bottom="15" left="20"/></padding>
+            <Button fx:id="saveButton" text="" onAction="#onSave" defaultButton="true"/>
+            <Button fx:id="cancelButton" text="" onAction="#onCancel" cancelButton="true"/>
+        </HBox>
+    </bottom>
+</BorderPane>

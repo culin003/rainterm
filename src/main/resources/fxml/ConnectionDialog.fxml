@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<GridPane fx:controller="com.raindrop.ui.ConnectionDialogController"
+          xmlns:fx="http://javafx.com/fxml"
+          hgap="10" vgap="10">
+    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+    <columnConstraints>
+        <ColumnConstraints minWidth="110" prefWidth="130"/>
+        <ColumnConstraints minWidth="280" prefWidth="320"/>
+        <ColumnConstraints minWidth="30" prefWidth="60"/>
+    </columnConstraints>
+
+    <Label fx:id="nameLabel" text="" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+    <TextField fx:id="nameField" GridPane.rowIndex="0" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
+
+    <Label fx:id="hostLabel" text="" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+    <TextField fx:id="hostField" GridPane.rowIndex="1" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
+
+    <Label fx:id="portLabel" text="" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+    <TextField fx:id="portField" text="22" GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
+
+    <Label fx:id="authTypeLabel" text="" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+    <ChoiceBox fx:id="authTypeChoice" GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
+
+    <Label fx:id="credentialLabel" text="" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+    <ChoiceBox fx:id="credentialChoice" GridPane.rowIndex="4" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
+
+    <Label fx:id="usernameLabel" text="" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+    <TextField fx:id="usernameField" GridPane.rowIndex="5" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
+
+    <Label fx:id="passwordLabel" text="" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+    <PasswordField fx:id="passwordField" GridPane.rowIndex="6" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
+
+    <Label fx:id="keyPathLabel" text="" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+    <TextField fx:id="keyPathField" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+    <Button fx:id="keyBrowseButton" text="" onAction="#onBrowseKey" GridPane.rowIndex="7" GridPane.columnIndex="2"/>
+
+    <Label fx:id="keyPassLabel" text="" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+    <PasswordField fx:id="keyPassField" GridPane.rowIndex="8" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
+
+    <Label fx:id="groupLabel" text="" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
+    <TextField fx:id="groupField" GridPane.rowIndex="9" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
+
+    <Label fx:id="encodingLabel" text="" GridPane.rowIndex="10" GridPane.columnIndex="0"/>
+    <ComboBox fx:id="encodingCombo" editable="true" GridPane.rowIndex="10" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
+
+    <HBox spacing="10" GridPane.rowIndex="11" GridPane.columnIndex="1" GridPane.columnSpan="2">
+        <Button fx:id="testButton" text="" onAction="#onTestConnection"/>
+        <Button fx:id="saveButton" text="" onAction="#onSave"/>
+        <Button fx:id="cancelButton" text="" onAction="#onCancel"/>
+    </HBox>
+</GridPane>

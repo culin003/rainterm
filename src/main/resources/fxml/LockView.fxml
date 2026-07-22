@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+
+<StackPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.raindrop.ui.security.LockController"
+           styleClass="lock-overlay" style="-fx-background-color: rgba(20,20,20,0.98);">
+    <VBox alignment="CENTER" spacing="16" maxWidth="420">
+        <padding><Insets top="40" right="40" bottom="40" left="40"/></padding>
+        <Label fx:id="titleLabel" text="" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #eaeaea;"/>
+        <Label fx:id="hintLabel" text="" wrapText="true" style="-fx-text-fill: #b0b0b0;"/>
+        <PasswordField fx:id="passwordField" onAction="#onUnlock"/>
+        <Label fx:id="errorLabel" text="" style="-fx-text-fill: #e74c3c;"/>
+        <HBox spacing="10" alignment="CENTER">
+            <Button fx:id="unlockButton" text="" onAction="#onUnlock" defaultButton="true"/>
+        </HBox>
+        <Hyperlink fx:id="forgotLink" text="" onAction="#onForgot"
+                   style="-fx-text-fill: #888;"/>
+    </VBox>
+</StackPane>

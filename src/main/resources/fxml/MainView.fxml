@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="com.raindrop.ui.MainController">
+    <top>
+        <VBox>
+            <ToolBar>
+                <Button fx:id="toggleSidebarButton" onAction="#onToggleSidebar" text=""/>
+                <Separator/>
+                <Button fx:id="newConnectionButton" text="" onAction="#onNewConnection"/>
+                <Button fx:id="credentialsButton" text="" onAction="#onManageCredentials"/>
+                <Separator/>
+                <Button fx:id="sftpButton" text="" onAction="#onOpenSftp"/>
+                <Button fx:id="settingsButton" text="" onAction="#onOpenSettings"/>
+                <Separator/>
+                <Button fx:id="disconnectAllButton" text="" onAction="#onDisconnectAll"/>
+                <Separator/>
+                <Button fx:id="lockButton" text="" onAction="#onLock"/>
+            </ToolBar>
+            <fx:include fx:id="quickConnect" source="QuickConnectBar.fxml"/>
+        </VBox>
+    </top>
+    <center>
+        <SplitPane fx:id="mainSplit" dividerPositions="0.22">
+            <items>
+                <fx:include fx:id="sessionList" source="SessionListPane.fxml"/>
+                <TabPane fx:id="tabPane" tabClosingPolicy="ALL_TABS"/>
+            </items>
+        </SplitPane>
+    </center>
+    <bottom>
+        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="status-bar">
+            <padding><Insets top="5" right="8" bottom="5" left="8"/></padding>
+            <Label fx:id="statusLabel" text=""/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="memoryLabel" styleClass="memory-label" text=""/>
+            <ProgressBar fx:id="memoryBar" prefWidth="120" progress="0.0" styleClass="memory-bar"/>
+        </HBox>
+    </bottom>
+</BorderPane>
