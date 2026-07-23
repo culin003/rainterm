@@ -1,4 +1,4 @@
-# Release Notes — Raindrop v0.1.0
+# Release Notes — Raindrop v1.0.0
 
 Raindrop 是一款基于 JavaFX 的跨平台 SSH/SFTP 桌面管理工具，对标 XShell / MobaXterm。
 
