@@ -13,9 +13,15 @@ jobs:
           - os: ubuntu-22.04
             arch: amd64
             pkg: deb
+            artifact: "*.deb"
           - os: ubuntu-22.04-arm
             arch: arm64
             pkg: deb
+            artifact: "*.deb"
+          - os: windows-latest
+            arch: x64
+            pkg: msi
+            artifact: "*.msi"
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -28,12 +34,10 @@ jobs:
           distribution: 'temurin'
 
       - name: Grant execute permission for gradlew
+        if: runner.os != 'Windows'
         run: chmod +x gradlew
 
       # Tests require a real SSH server; run locally with ./gradlew test
-      - name: Build installer
-        run: ./gradlew jpackage
-
       - name: Build installer
         run: ./gradlew jpackage
 
@@ -41,7 +45,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: raindrop-${{ matrix.arch }}
-          path: build/jpackage/*.deb
+          path: build/jpackage/${{ matrix.artifact }}
 
   release:
     needs: build
@@ -64,5 +68,6 @@ jobs:
           files: |
             raindrop-amd64/*.deb
             raindrop-arm64/*.deb
+            raindrop-x64/*.msi
           draft: false
           prerelease: false
