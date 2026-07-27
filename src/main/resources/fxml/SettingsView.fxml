@@ -25,20 +25,14 @@
             <Label fx:id="languageLabel" text="" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
             <ComboBox fx:id="languageCombo" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
-            <Label fx:id="widthLabel" text="" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-            <Spinner fx:id="widthSpinner" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
-
-            <Label fx:id="heightLabel" text="" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-            <Spinner fx:id="heightSpinner" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
-
-            <Label fx:id="idleTimeoutLabel" text="" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
-            <HBox spacing="8" alignment="CENTER_LEFT" GridPane.rowIndex="6" GridPane.columnIndex="1">
+            <Label fx:id="idleTimeoutLabel" text="" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+            <HBox spacing="8" alignment="CENTER_LEFT" GridPane.rowIndex="4" GridPane.columnIndex="1">
                 <Spinner fx:id="idleTimeoutSpinner"/>
                 <Label fx:id="idleTimeoutHint" text="" style="-fx-text-fill: #888;"/>
             </HBox>
 
-            <Label fx:id="masterPasswordLabel" text="" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
-            <Button fx:id="changeMasterPasswordButton" text="" onAction="#onChangeMasterPassword" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+            <Label fx:id="masterPasswordLabel" text="" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+            <Button fx:id="changeMasterPasswordButton" text="" onAction="#onChangeMasterPassword" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
         </GridPane>
     </center>
     <bottom>

@@ -7,10 +7,11 @@ import com.raindrop.util.I18nManager;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -22,6 +23,7 @@ import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.Region;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import net.schmizz.sshj.sftp.RemoteResourceInfo;
@@ -29,19 +31,17 @@ import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * SFTP dual-pane browser. Supports local navigation, remote navigation,
- * multi-selection upload/download, drag-and-drop, and per-file progress.
- */
 public class SftpBrowserController {
 
     private static final String DIR_PREFIX = "[DIR] ";
-    private static final String PARENT_ENTRY = ".. (up)";  // Internal identifier for logic
+    private static final String PARENT_ENTRY = ".. (up)";
 
     private static String getParentEntryLabel() {
         return I18nManager.t("sftp.parent_dir");
@@ -74,7 +74,6 @@ public class SftpBrowserController {
 
     @FXML
     public void initialize() {
-        // Set all labels and buttons with i18n
         localLabel.setText(I18nManager.t("sftp.local"));
         remoteLabel.setText(I18nManager.t("sftp.remote"));
         localFilesLabel.setText(I18nManager.t("sftp.local_files"));
@@ -117,17 +116,11 @@ public class SftpBrowserController {
         remoteFileList.setContextMenu(new ContextMenu(newFolder, rename, delete, refresh));
     }
 
-    /**
-     * ListView cell that renders our internal entry strings with an Ikonli icon:
-     * "[DIR] foo" → folder icon + "foo", ".. (up)" → up-arrow, regular files → file icon.
-     * The internal item string is left unchanged so callers keep using the
-     * "[DIR] " marker to distinguish directories.
-     */
     private static final class EntryCell extends ListCell<String> {
         private static final int ICON_SIZE = 14;
-        private static final String DIR_COLOR = "#e8b84c";   // amber folder
-        private static final String UP_COLOR = "#4ec9b0";    // accent (matches dark theme)
-        private static final String FILE_COLOR = "#a0a0a0";  // muted grey
+        private static final String DIR_COLOR = "#e8b84c";
+        private static final String UP_COLOR = "#4ec9b0";
+        private static final String FILE_COLOR = "#a0a0a0";
 
         @Override
         protected void updateItem(String item, boolean empty) {
@@ -164,8 +157,6 @@ public class SftpBrowserController {
         loadLocalFiles();
         loadRemoteFiles("/");
     }
-
-    // ---------- Local navigation ----------
 
     private void loadLocalFiles() {
         localPathField.setText(currentLocalDir.getAbsolutePath());
@@ -205,8 +196,6 @@ public class SftpBrowserController {
             statusLabel.setText(I18nManager.t("sftp.not_a_directory", "path", path));
         }
     }
-
-    // ---------- Remote navigation ----------
 
     private void loadRemoteFiles(String path) {
         if (session == null || !session.isConnected()) {
@@ -252,33 +241,79 @@ public class SftpBrowserController {
         if (path != null && !path.isEmpty()) loadRemoteFiles(path);
     }
 
-    // ---------- Transfer actions ----------
-
     @FXML
     private void onUpload() {
-        FileChooser fc = new FileChooser();
-        fc.setTitle(I18nManager.t("sftp.upload_select"));
-        fc.setInitialDirectory(currentLocalDir);
-        List<File> files = fc.showOpenMultipleDialog(localFileList.getScene().getWindow());
-        if (files == null || files.isEmpty()) return;
-        doUpload(files);
+        Alert choice = new Alert(Alert.AlertType.CONFIRMATION);
+        choice.setTitle(I18nManager.t("sftp.upload_select"));
+        choice.setHeaderText(null);
+        choice.setContentText(I18nManager.t("sftp.upload_choice"));
+
+        ButtonType btnFiles = new ButtonType(I18nManager.t("sftp.select_files"));
+        ButtonType btnFolder = new ButtonType(I18nManager.t("sftp.select_folder"));
+        ButtonType btnCancel = ButtonType.CANCEL;
+        choice.getButtonTypes().setAll(btnFiles, btnFolder, btnCancel);
+
+        com.raindrop.util.DialogUtil.showBlockingDialog(choice).ifPresent(bt -> {
+            if (bt == btnFiles) {
+                FileChooser fc = new FileChooser();
+                fc.setTitle(I18nManager.t("sftp.upload_select"));
+                fc.setInitialDirectory(currentLocalDir);
+                List<File> files = fc.showOpenMultipleDialog(localFileList.getScene().getWindow());
+                if (files != null && !files.isEmpty()) startUpload(files);
+            } else if (bt == btnFolder) {
+                DirectoryChooser dc = new DirectoryChooser();
+                dc.setTitle(I18nManager.t("sftp.select_folder"));
+                dc.setInitialDirectory(currentLocalDir);
+                File folder = dc.showDialog(localFileList.getScene().getWindow());
+                if (folder != null) startUpload(Collections.singletonList(folder));
+            }
+        });
+    }
+
+    private void startUpload(List<File> items) {
+        progressBar.setProgress(-1);
+        statusLabel.setText(I18nManager.t("sftp.scanning_folders"));
+
+        TaskExecutor.submit(() -> {
+            try {
+                long totalSize = SftpService.calculateTotalSize(items);
+                String remoteDir = remotePathField.getText();
+
+                Platform.runLater(() -> {
+                    statusLabel.setText(I18nManager.t("sftp.uploading",
+                        "count", String.valueOf(items.size()),
+                        "size", humanBytes(totalSize)));
+                });
+
+                sftpService.batchUploadWithFolders(session, items, remoteDir,
+                    totalSize, this::onBatchProgress)
+                    .whenComplete((v, err) -> Platform.runLater(() -> {
+                        if (err != null) {
+                            statusLabel.setText(I18nManager.t("sftp.upload_failed",
+                                "message", rootMsg(err)));
+                            resetProgressStyle();
+                        } else {
+                            statusLabel.setText(I18nManager.t("sftp.upload_complete",
+                                "count", String.valueOf(items.size())));
+                            progressBar.setProgress(1);
+                            loadRemoteFiles(remoteDir);
+                        }
+                    }));
+            } catch (IOException e) {
+                Platform.runLater(() -> {
+                    statusLabel.setText(I18nManager.t("sftp.upload_failed",
+                        "message", rootMsg(e)));
+                    resetProgressStyle();
+                });
+            }
+        });
     }
 
     @FXML
     private void onDownload() {
         List<String> selection = new ArrayList<>(remoteFileList.getSelectionModel().getSelectedItems());
+        selection.removeIf(s -> s == null || PARENT_ENTRY.equals(s));
         if (selection.isEmpty() || session == null) return;
-
-        List<String> remotePaths = new ArrayList<>();
-        String remoteDir = remotePathField.getText();
-        for (String item : selection) {
-            if (PARENT_ENTRY.equals(item) || item.startsWith(DIR_PREFIX)) continue;
-            remotePaths.add(joinRemote(remoteDir, item));
-        }
-        if (remotePaths.isEmpty()) {
-            statusLabel.setText(I18nManager.t("sftp.select_regular_files"));
-            return;
-        }
 
         DirectoryChooser dc = new DirectoryChooser();
         dc.setInitialDirectory(currentLocalDir);
@@ -287,20 +322,96 @@ public class SftpBrowserController {
         if (target == null) return;
 
         progressBar.setProgress(-1);
-        statusLabel.setText(I18nManager.t("sftp.downloading", "count", String.valueOf(remotePaths.size())));
-        sftpService.batchDownload(session, remotePaths, target, this::onProgress)
-            .whenComplete((v, err) -> Platform.runLater(() -> {
-                if (err != null) {
-                    statusLabel.setText(I18nManager.t("sftp.download_failed", "message", rootMsg(err)));
-                    progressBar.setProgress(0);
-                } else {
-                    statusLabel.setText(I18nManager.t("sftp.download_complete", "count", String.valueOf(remotePaths.size())));
-                    progressBar.setProgress(1);
-                    if (target.equals(currentLocalDir) || target.getAbsolutePath().equals(currentLocalDir.getAbsolutePath())) {
-                        loadLocalFiles();
-                    }
-                }
-            }));
+        statusLabel.setText(I18nManager.t("sftp.scanning_remote"));
+
+        List<String> remotePaths = new ArrayList<>();
+        String remoteDir = remotePathField.getText();
+        for (String item : selection) {
+            String name = item.startsWith(DIR_PREFIX) ? item.substring(DIR_PREFIX.length()) : item;
+            remotePaths.add(joinRemote(remoteDir, name));
+        }
+
+        sftpService.calculateRemoteTotalSize(session, remotePaths)
+            .thenAccept(totalSize -> Platform.runLater(() -> {
+                statusLabel.setText(I18nManager.t("sftp.downloading",
+                    "count", String.valueOf(selection.size()),
+                    "size", humanBytes(totalSize)));
+
+                sftpService.batchDownloadWithFolders(session, remotePaths, target,
+                    totalSize, this::onBatchProgress)
+                    .whenComplete((v, err) -> Platform.runLater(() -> {
+                        if (err != null) {
+                            statusLabel.setText(I18nManager.t("sftp.download_failed",
+                                "message", rootMsg(err)));
+                            resetProgressStyle();
+                        } else {
+                            statusLabel.setText(I18nManager.t("sftp.download_complete",
+                                "count", String.valueOf(selection.size())));
+                            progressBar.setProgress(1);
+                            if (target.equals(currentLocalDir) ||
+                                target.getAbsolutePath().equals(currentLocalDir.getAbsolutePath())) {
+                                loadLocalFiles();
+                            }
+                        }
+                    }));
+            }))
+            .exceptionally(e -> {
+                Platform.runLater(() -> {
+                    statusLabel.setText(I18nManager.t("sftp.download_failed",
+                        "message", rootMsg(e)));
+                    resetProgressStyle();
+                });
+                return null;
+            });
+    }
+
+    private void onBatchProgress(String fileName,
+                                  long fileTransferred, long fileTotal,
+                                  long totalTransferred, long totalSize,
+                                  int completedFiles, int totalFiles) {
+        double filePct = fileTotal > 0 ? (double) fileTransferred / fileTotal : 0;
+        double overallPct = totalSize > 0 ? (double) totalTransferred / totalSize : 0;
+
+        Platform.runLater(() -> {
+            progressBar.setProgress(1.0);
+            updateDualProgressStyle(filePct, overallPct);
+            statusLabel.setText(String.format("[%d/%d] %s  %s / %s  (总体: %s / %s)",
+                completedFiles, totalFiles,
+                fileName,
+                humanBytes(fileTransferred),
+                fileTotal > 0 ? humanBytes(fileTotal) : "?",
+                humanBytes(totalTransferred),
+                humanBytes(totalSize)));
+        });
+    }
+
+    private void updateDualProgressStyle(double filePct, double overallPct) {
+        int filePctInt = (int) Math.round(filePct * 100);
+        int overallPctInt = (int) Math.round(overallPct * 100);
+
+        String style = String.format(
+            "-fx-background-color: linear-gradient(to right, " +
+            "#e8b84c 0%%, " +
+            "#e8b84c %d%%, " +
+            "#4ec9b0 %d%%, " +
+            "#4ec9b0 %d%%, " +
+            "transparent %d%%, " +
+            "transparent 100%%);",
+            filePctInt, filePctInt,
+            overallPctInt, overallPctInt);
+
+        Node bar = progressBar.lookup(".bar");
+        if (bar != null && bar instanceof Region) {
+            ((Region) bar).setStyle(style);
+        }
+    }
+
+    private void resetProgressStyle() {
+        progressBar.setProgress(0);
+        Node bar = progressBar.lookup(".bar");
+        if (bar != null && bar instanceof Region) {
+            ((Region) bar).setStyle(null);
+        }
     }
 
     @FXML
@@ -316,8 +427,7 @@ public class SftpBrowserController {
         dlg.setTitle(I18nManager.t("sftp.mkdir"));
         dlg.setHeaderText(null);
         dlg.setContentText(I18nManager.t("sftp.folder_name"));
-        com.raindrop.util.ThemeManager.apply(dlg.getDialogPane());
-        dlg.showAndWait().ifPresent(name -> {
+        com.raindrop.util.DialogUtil.showBlockingDialog(dlg).ifPresent(name -> {
             String trimmed = name == null ? "" : name.trim();
             if (trimmed.isEmpty()) return;
             String remoteDir = remotePathField.getText();
@@ -347,8 +457,7 @@ public class SftpBrowserController {
         dlg.setTitle(I18nManager.t("sftp.rename"));
         dlg.setHeaderText(null);
         dlg.setContentText(I18nManager.t("sftp.rename_to"));
-        com.raindrop.util.ThemeManager.apply(dlg.getDialogPane());
-        dlg.showAndWait().ifPresent(name -> {
+        com.raindrop.util.DialogUtil.showBlockingDialog(dlg).ifPresent(name -> {
             String trimmed = name == null ? "" : name.trim();
             if (trimmed.isEmpty() || trimmed.equals(oldName)) return;
             String remoteDir = remotePathField.getText();
@@ -378,8 +487,7 @@ public class SftpBrowserController {
         confirm.setTitle(I18nManager.t("sftp.delete"));
         confirm.setHeaderText(null);
         confirm.setContentText(I18nManager.t("sftp.delete_confirm", "count", String.valueOf(selection.size())));
-        com.raindrop.util.ThemeManager.apply(confirm);
-        confirm.showAndWait().ifPresent(bt -> {
+        com.raindrop.util.DialogUtil.showBlockingDialog(confirm).ifPresent(bt -> {
             if (bt != ButtonType.OK) return;
             String remoteDir = remotePathField.getText();
             List<CompletableFutureItem> jobs = new ArrayList<>();
@@ -407,45 +515,20 @@ public class SftpBrowserController {
     private record CompletableFutureItem(String name, java.util.concurrent.CompletableFuture<Void> future) {}
 
     private void doUpload(List<File> files) {
-        String remoteDir = remotePathField.getText();
-        progressBar.setProgress(-1);
-        statusLabel.setText(I18nManager.t("sftp.uploading", "count", String.valueOf(files.size())));
-        sftpService.batchUpload(session, files, remoteDir, this::onProgress)
-            .whenComplete((v, err) -> Platform.runLater(() -> {
-                if (err != null) {
-                    statusLabel.setText(I18nManager.t("sftp.upload_failed", "message", rootMsg(err)));
-                    progressBar.setProgress(0);
-                } else {
-                    statusLabel.setText(I18nManager.t("sftp.upload_complete", "count", String.valueOf(files.size())));
-                    progressBar.setProgress(1);
-                    loadRemoteFiles(remoteDir);
-                }
-            }));
+        startUpload(files);
     }
-
-    /** Runs on virtual thread — dispatch back to FX. */
-    private void onProgress(String file, long transferred, long total) {
-        double pct = total > 0 ? (double) transferred / total : -1;
-        Platform.runLater(() -> {
-            progressBar.setProgress(pct);
-            statusLabel.setText(String.format("%s  %s / %s",
-                file, humanBytes(transferred), total > 0 ? humanBytes(total) : "?"));
-        });
-    }
-
-    // ---------- Drag and drop ----------
 
     private void setupDragAndDrop() {
-        // Drag from local list → files
         localFileList.setOnDragDetected(e -> {
             String sel = localFileList.getSelectionModel().getSelectedItem();
-            if (sel == null || PARENT_ENTRY.equals(sel) || sel.startsWith(DIR_PREFIX)) return;
+            if (sel == null || PARENT_ENTRY.equals(sel)) return;
             Dragboard db = localFileList.startDragAndDrop(TransferMode.COPY);
             ClipboardContent cc = new ClipboardContent();
             List<File> files = localFileList.getSelectionModel().getSelectedItems().stream()
-                .filter(s -> s != null && !PARENT_ENTRY.equals(s) && !s.startsWith(DIR_PREFIX))
-                .map(s -> new File(currentLocalDir, s))
-                .filter(File::isFile)
+                .filter(s -> s != null && !PARENT_ENTRY.equals(s))
+                .map(s -> s.startsWith(DIR_PREFIX)
+                    ? new File(currentLocalDir, s.substring(DIR_PREFIX.length()))
+                    : new File(currentLocalDir, s))
                 .collect(Collectors.toList());
             if (files.isEmpty()) return;
             cc.putFiles(files);
@@ -453,7 +536,6 @@ public class SftpBrowserController {
             e.consume();
         });
 
-        // Drop onto remote list → upload
         remoteFileList.setOnDragOver(e -> {
             if (e.getGestureSource() != remoteFileList && e.getDragboard().hasFiles()) {
                 e.acceptTransferModes(TransferMode.COPY);
@@ -464,14 +546,13 @@ public class SftpBrowserController {
             Dragboard db = e.getDragboard();
             boolean ok = false;
             if (db.hasFiles()) {
-                List<File> files = db.getFiles().stream().filter(File::isFile).collect(Collectors.toList());
-                if (!files.isEmpty()) { doUpload(files); ok = true; }
+                List<File> files = db.getFiles();
+                if (!files.isEmpty()) { startUpload(files); ok = true; }
             }
             e.setDropCompleted(ok);
             e.consume();
         });
 
-        // Drop from OS → local upload target (also allows OS-native drags to remote)
         localFileList.setOnDragOver(e -> {
             if (e.getGestureSource() != localFileList && e.getDragboard().hasFiles()) {
                 e.acceptTransferModes(TransferMode.COPY);
@@ -479,8 +560,6 @@ public class SftpBrowserController {
             e.consume();
         });
     }
-
-    // ---------- Helpers ----------
 
     private static String joinRemote(String base, String name) {
         if (base.endsWith("/")) return base + name;
@@ -506,5 +585,18 @@ public class SftpBrowserController {
         if (b < 1024L * 1024) return String.format("%.1f KB", b / 1024.0);
         if (b < 1024L * 1024 * 1024) return String.format("%.1f MB", b / (1024.0 * 1024));
         return String.format("%.2f GB", b / (1024.0 * 1024 * 1024));
+    }
+
+    /**
+     * Clean up resources when the SFTP tab is closed.
+     * This ensures the progress bar CSS is reset to avoid memory leaks
+     * and restore default styling.
+     * Note: The SshSession is owned by the corresponding terminal tab and
+     * will be disconnected when the terminal tab is closed.
+     */
+    public void cleanup() {
+        resetProgressStyle();
+        // Clear the session reference to prevent any accidental usage
+        this.session = null;
     }
 }

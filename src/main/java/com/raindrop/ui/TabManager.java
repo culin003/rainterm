@@ -9,6 +9,7 @@ import com.raindrop.terminal.RaindropSettingsProvider;
 import com.raindrop.terminal.SshTtyConnector;
 import com.raindrop.terminal.TerminalTheme;
 import com.raindrop.util.ConfigManager;
+import com.raindrop.util.I18nManager;
 import com.techsenger.jeditermfx.ui.JediTermFxWidget;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -16,7 +17,9 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.Pane;
@@ -45,6 +48,7 @@ public class TabManager {
     private final Map<Tab, JediTermFxWidget> widgets = new ConcurrentHashMap<>();
     private final Map<Tab, ConnectionProfile> tabProfile = new ConcurrentHashMap<>();
     private final Map<Tab, RaindropSettingsProvider> tabSettings = new ConcurrentHashMap<>();
+    private final Map<Tab, SshSession> connectingSessions = new ConcurrentHashMap<>();
 
     public TabManager(TabPane tabPane, ConnectionManager connectionManager, MainController mainController) {
         this.tabPane = tabPane;
@@ -99,18 +103,21 @@ public class TabManager {
             tab.setContent(placeholder);
             tab.setClosable(true);
             tab.setOnClosed(e -> closeTabResources(tab));
+            setupTabContextMenu(tab);
             tabPane.getTabs().add(tab);
             tabPane.getSelectionModel().select(tab);
         }
         tabProfile.put(tab, profile);
         tabSettings.put(tab, settings);
+        widgets.put(tab, widget);
 
         TaskExecutor.submit(() -> {
             try {
                 SshSession session = new SshSession(profile);
+                connectingSessions.put(tab, session);
                 session.connect();
+                connectingSessions.remove(tab);
                 connectionManager.register(tab, session);
-                widgets.put(tab, widget);
 
                 SshTtyConnector connector = new SshTtyConnector(
                     session.getShell(), effectiveCharset,
@@ -130,6 +137,10 @@ public class TabManager {
                     });
                 });
             } catch (IOException e) {
+                SshSession failed = connectingSessions.remove(tab);
+                if (failed != null) {
+                    try { failed.disconnect(); } catch (Exception ignored) {}
+                }
                 Platform.runLater(() -> {
                     tab.setContent(disconnectedPanel(profile, "Connection failed: " + e.getMessage(), tab));
                     tab.setText(profile.getName() + " (" + profile.getHost() + ") ✗");
@@ -194,9 +205,15 @@ public class TabManager {
         if (widget != null) {
             try { widget.close(); } catch (Exception ignored) {}
         }
+        // Disconnect session if already registered
         SshSession session = connectionManager.unregister(tab);
         if (session != null) {
             try { session.disconnect(); } catch (Exception ignored) {}
+        }
+        // Also disconnect if still connecting
+        SshSession connecting = connectingSessions.remove(tab);
+        if (connecting != null) {
+            try { connecting.disconnect(); } catch (Exception ignored) {}
         }
         tabProfile.remove(tab);
         tabSettings.remove(tab);
@@ -227,6 +244,10 @@ public class TabManager {
 
     public int getActiveTabCount() {
         return connectionManager.getActiveCount();
+    }
+
+    public com.raindrop.storage.ConnectionProfile getTabProfile(Tab tab) {
+        return tabProfile.get(tab);
     }
 
     /**
@@ -282,18 +303,28 @@ public class TabManager {
         }
     }
 
-    private static void applyBackgroundStyle(Pane pane, String hex) {
-        if (pane == null) return;
-        pane.setStyle("-fx-background-color: " + hex + ";");
+    private void setupTabContextMenu(Tab tab) {
+        ContextMenu menu = new ContextMenu();
+        MenuItem duplicate = new MenuItem(I18nManager.t("tab.duplicate"));
+        MenuItem openSftp = new MenuItem(I18nManager.t("tab.open_sftp"));
+        MenuItem close = new MenuItem(I18nManager.t("tab.close"));
+
+        duplicate.setOnAction(e -> {
+            ConnectionProfile profile = tabProfile.get(tab);
+            if (profile != null) openTab(profile);
+        });
+
+        openSftp.setOnAction(e -> openSftpForTab(tab));
+
+        close.setOnAction(e -> closeTab(tab));
+
+        menu.getItems().addAll(duplicate, openSftp, close);
+        tab.setContextMenu(menu);
     }
 
-    /**
-     * Open a SFTP tab for the currently-selected terminal session.
-     */
-    public boolean openSftpForCurrentTab() {
-        Tab current = getCurrentTab();
-        if (current == null) return false;
-        SshSession session = connectionManager.getSession(current);
+    public boolean openSftpForTab(Tab targetTab) {
+        if (targetTab == null) return false;
+        SshSession session = connectionManager.getSession(targetTab);
         if (session == null || !session.isConnected()) return false;
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/SftpBrowser.fxml"));
@@ -305,6 +336,7 @@ public class TabManager {
             Tab tab = new Tab("SFTP: " + host);
             tab.setContent(root);
             tab.setClosable(true);
+            tab.setOnClosed(e -> controller.cleanup());
             tabPane.getTabs().add(tab);
             tabPane.getSelectionModel().select(tab);
             return true;
@@ -312,5 +344,17 @@ public class TabManager {
             mainController.showError("Failed to open SFTP: " + e.getMessage());
             return false;
         }
+    }
+
+    private static void applyBackgroundStyle(Pane pane, String hex) {
+        if (pane == null) return;
+        pane.setStyle("-fx-background-color: " + hex + ";");
+    }
+
+    /**
+     * Open a SFTP tab for the currently-selected terminal session.
+     */
+    public boolean openSftpForCurrentTab() {
+        return openSftpForTab(getCurrentTab());
     }
 }

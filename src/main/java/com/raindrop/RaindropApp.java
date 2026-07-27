@@ -1,5 +1,6 @@
 package com.raindrop;
 
+import com.raindrop.security.IdleWatchdog;
 import com.raindrop.security.SecurityManager;
 import com.raindrop.storage.DatabaseManager;
 import com.raindrop.ui.MainController;
@@ -25,8 +26,8 @@ public class RaindropApp extends Application {
         mainController = loader.getController();
 
         ConfigManager cfg = ConfigManager.getInstance();
-        int w = cfg.getInt(ConfigManager.KEY_WINDOW_WIDTH, 1200);
-        int h = cfg.getInt(ConfigManager.KEY_WINDOW_HEIGHT, 800);
+        int w = 900;
+        int h = 700;
 
         // Wrap the BorderPane in a StackPane so we can overlay a lock screen
         // on top without detaching the main content (which would tear down the
@@ -38,11 +39,13 @@ public class RaindropApp extends Application {
         primaryStage.setTitle("Raindrop SSH Manager");
         primaryStage.setScene(scene);
         primaryStage.setOnCloseRequest(e -> {
-            cfg.set(ConfigManager.KEY_WINDOW_WIDTH, String.valueOf((int) primaryStage.getWidth()));
-            cfg.set(ConfigManager.KEY_WINDOW_HEIGHT, String.valueOf((int) primaryStage.getHeight()));
-            if (mainController != null && mainController.getTabManager() != null) {
-                mainController.getTabManager().closeAllTabs();
+            if (mainController != null) {
+                mainController.stopMemoryMonitor();
+                if (mainController.getTabManager() != null) {
+                    mainController.getTabManager().closeAllTabs();
+                }
             }
+            IdleWatchdog.get().stop();
         });
 
         SecurityManager.getInstance().bootstrap();
@@ -54,23 +57,11 @@ public class RaindropApp extends Application {
     public void stop() {
         // Called by JavaFX after the last stage is closed. Release everything not
         // already released by the close-request handler so the JVM can exit cleanly.
-        try {
-            if (mainController != null) mainController.stopMemoryMonitor();
-        } catch (Exception ignored) {}
-        try {
-            if (mainController != null) {
-                mainController.stopMemoryMonitor();
-                if (mainController.getTabManager() != null) {
-                    mainController.getTabManager().closeAllTabs();
-                }
-            }
-        } catch (Exception ignored) {}
-        try {
-            com.raindrop.core.TaskExecutor.shutdown();
-        } catch (Exception ignored) {}
-        try {
-            DatabaseManager.close();
-        } catch (Exception ignored) {}
+        try { IdleWatchdog.get().stop(); } catch (Exception ignored) {}
+        try { if (mainController != null) mainController.stopMemoryMonitor(); } catch (Exception ignored) {}
+        try { if (mainController != null && mainController.getTabManager() != null) mainController.getTabManager().closeAllTabs(); } catch (Exception ignored) {}
+        try { com.raindrop.core.TaskExecutor.shutdown(); } catch (Exception ignored) {}
+        try { DatabaseManager.close(); } catch (Exception ignored) {}
     }
 
     public static MainController getMainController() {

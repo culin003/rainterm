@@ -220,14 +220,15 @@ public class ConnectionDialogController {
         if (profile == null) return;
 
         com.raindrop.core.TaskExecutor.submit(() -> {
+            com.raindrop.core.SshSession session = new com.raindrop.core.SshSession(profile);
             try {
-                com.raindrop.core.SshSession session = new com.raindrop.core.SshSession(profile);
                 session.connect();
-                session.disconnect();
                 Platform.runLater(() -> alert(Alert.AlertType.INFORMATION, I18nManager.t("connection_dialog.test_success")));
             } catch (Exception e) {
                 String msg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
                 Platform.runLater(() -> alert(Alert.AlertType.ERROR, I18nManager.t("connection_dialog.test_failed", "message", msg)));
+            } finally {
+                try { session.disconnect(); } catch (Exception ignored) {}
             }
         });
     }
@@ -332,15 +333,9 @@ public class ConnectionDialogController {
     }
 
     private void alert(Alert.AlertType type, String message) {
-        Alert alert = new Alert(type);
-        alert.setTitle(type == Alert.AlertType.ERROR ? "Error"  // TODO: i18n
-            : type == Alert.AlertType.WARNING ? "Validation" : "Info");  // TODO: i18n
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        com.raindrop.util.ThemeManager.apply(alert);
-        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-        alertStage.setAlwaysOnTop(true);
-        alert.showAndWait();
+        String title = type == Alert.AlertType.ERROR ? "Error"
+            : type == Alert.AlertType.WARNING ? "Validation" : "Info";
+        com.raindrop.util.DialogUtil.showMessage(title, message);
     }
 
     private void closeDialog() {

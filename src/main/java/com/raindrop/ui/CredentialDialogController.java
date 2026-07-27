@@ -255,24 +255,10 @@ public class CredentialDialogController {
     }
 
     private void showError(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setTitle("Error");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        com.raindrop.util.ThemeManager.apply(alert);
-        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-        alertStage.setAlwaysOnTop(true);
-        alert.showAndWait();
+        com.raindrop.util.DialogUtil.showMessage("Error", message);
     }
 
     private void showInfo(String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Info");
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        com.raindrop.util.ThemeManager.apply(alert);
-        Stage alertStage = (Stage) alert.getDialogPane().getScene().getWindow();
-        alertStage.setAlwaysOnTop(true);
-        alert.showAndWait();
+        com.raindrop.util.DialogUtil.showMessage("Info", message);
     }
 }

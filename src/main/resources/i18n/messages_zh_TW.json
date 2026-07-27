@@ -99,8 +99,6 @@
     "theme": "終端佈景主題",
     "font_size": "字型大小",
     "default_encoding": "預設編碼",
-    "window_width": "視窗寬度",
-    "window_height": "視窗高度",
     "auto_lock_timeout": "自動鎖定逾時（秒）",
     "auto_lock_never": "0 = 永不",
     "master_password": "主要密碼"
@@ -153,14 +151,14 @@
     "error": "錯誤：{message}",
     "not_a_directory": "不是目錄：{path}",
     "select_files_to_upload": "選取要上傳的檔案",
-    "select_regular_files": "請選擇檔案（不支援目錄）",
+    "select_regular_files": "請選擇檔案",
     "select_target_dir": "選取目標目錄",
-    "downloading": "正在下載 {count} 個檔案...",
+    "downloading": "正在下載 {count} 項...（總大小：{size}）",
     "download_failed": "下載失敗：{message}",
-    "download_complete": "下載完成（{count} 個檔案）",
-    "uploading": "正在上傳 {count} 個檔案...",
+    "download_complete": "下載完成（{count} 項）",
+    "uploading": "正在上傳 {count} 項...（總大小：{size}）",
     "upload_failed": "上傳失敗：{message}",
-    "upload_complete": "上傳完成（{count} 個檔案）",
+    "upload_complete": "上傳完成（{count} 項）",
     "creating": "正在建立 {path} ...",
     "mkdir_failed": "建立目錄失敗：{message}",
     "created": "已建立 {path}",
@@ -173,6 +171,11 @@
     "deleted": "已刪除 {count} 項",
     "parent_dir": "..（上層）",
     "upload_select": "選取要上傳的檔案",
+    "upload_choice": "請選擇上傳類型：",
+    "select_files": "選擇檔案",
+    "select_folder": "選擇資料夾",
+    "scanning_folders": "正在掃描本機資料夾...",
+    "scanning_remote": "正在掃描遠端目錄...",
     "status_ready": "就緒"
   },
   "quick_connect": {
@@ -209,5 +212,20 @@
     "page_down": "向下翻頁",
     "line_up": "向上一行",
     "line_down": "向下一行"
+  },
+  "tab": {
+    "duplicate": "複製",
+    "open_sftp": "SFTP",
+    "close": "關閉",
+    "reconnect": "重新連線"
+  },
+  "shortcuts": {
+    "duplicate_tab": "複製標籤頁",
+    "open_sftp": "開啟 SFTP",
+    "reconnect_tab": "重新連線",
+    "close_tab": "關閉標籤頁",
+    "prev_tab": "上一個標籤頁",
+    "next_tab": "下一個標籤頁",
+    "select_tab_n": "切換到第 {n} 個標籤頁"
   }
 }

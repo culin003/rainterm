@@ -106,7 +106,7 @@ public class LockController {
             stage.setAlwaysOnTop(true);
             stage.setTitle(I18nManager.t("lock.load_reset_title"));
             stage.setScene(scene);
-            stage.showAndWait();
+            com.raindrop.util.DialogUtil.showDialog(stage);
         } catch (IOException e) {
             errorLabel.setText("Failed to load reset dialog: " + e.getMessage());  // TODO: i18n
         }

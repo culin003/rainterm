@@ -99,8 +99,6 @@
     "theme": "Terminal theme",
     "font_size": "Font size",
     "default_encoding": "Default encoding",
-    "window_width": "Window width",
-    "window_height": "Window height",
     "auto_lock_timeout": "Auto-lock idle timeout (s)",
     "auto_lock_never": "0 = never",
     "master_password": "Master password"
@@ -153,14 +151,14 @@
     "error": "Error: {message}",
     "not_a_directory": "Not a directory: {path}",
     "select_files_to_upload": "Select File(s) to Upload",
-    "select_regular_files": "Select regular files (directories not supported)",
+    "select_regular_files": "Select regular files",
     "select_target_dir": "Select target directory",
-    "downloading": "Downloading {count} file(s)...",
+    "downloading": "Downloading {count} items... (total: {size})",
     "download_failed": "Download failed: {message}",
-    "download_complete": "Download complete ({count} files)",
-    "uploading": "Uploading {count} file(s)...",
+    "download_complete": "Download complete ({count} items)",
+    "uploading": "Uploading {count} items... (total: {size})",
     "upload_failed": "Upload failed: {message}",
-    "upload_complete": "Upload complete ({count} files)",
+    "upload_complete": "Upload complete ({count} items)",
     "creating": "Creating {path} ...",
     "mkdir_failed": "mkdir failed: {message}",
     "created": "Created {path}",
@@ -173,6 +171,11 @@
     "deleted": "Deleted {count} item(s)",
     "parent_dir": ".. (up)",
     "upload_select": "Select File(s) to Upload",
+    "upload_choice": "Select upload type:",
+    "select_files": "Select Files",
+    "select_folder": "Select Folder",
+    "scanning_folders": "Scanning local folders...",
+    "scanning_remote": "Scanning remote directory...",
     "status_ready": "Ready"
   },
   "quick_connect": {
@@ -209,5 +212,20 @@
     "page_down": "Page Down",
     "line_up": "Line Up",
     "line_down": "Line Down"
+  },
+  "tab": {
+    "duplicate": "Duplicate",
+    "open_sftp": "SFTP",
+    "close": "Close",
+    "reconnect": "Reconnect"
+  },
+  "shortcuts": {
+    "duplicate_tab": "Duplicate Tab",
+    "open_sftp": "Open SFTP",
+    "reconnect_tab": "Reconnect Tab",
+    "close_tab": "Close Tab",
+    "prev_tab": "Previous Tab",
+    "next_tab": "Next Tab",
+    "select_tab_n": "Select Tab {n}"
   }
 }

@@ -6,6 +6,7 @@ import com.raindrop.core.TaskExecutor;
 import com.raindrop.security.IdleWatchdog;
 import com.raindrop.security.SecurityManager;
 import com.raindrop.storage.ConnectionProfile;
+import javafx.beans.value.ChangeListener;
 import com.raindrop.ui.security.LockController;
 import com.raindrop.ui.security.MasterPasswordSetupController;
 import com.raindrop.util.ConfigManager;
@@ -30,8 +31,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
-import javafx.stage.Window;
 import javafx.util.Duration;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -74,6 +73,7 @@ public class MainController {
     // is single-threaded so no synchronization is needed here.
     private long lastUsedMb = -1;
     private String lastMemoryStyleTier = "";
+    private ChangeListener<Boolean> lockStateListener;
 
     @FXML
     public void initialize() {
@@ -126,6 +126,22 @@ public class MainController {
             this::onOpenSettings);
         acc.put(new KeyCodeCombination(KeyCode.L, KeyCombination.SHORTCUT_DOWN),
             this::onLock);
+        // Tab shortcuts
+        acc.put(new KeyCodeCombination(KeyCode.T, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN),
+            this::duplicateCurrentTab);
+        acc.put(new KeyCodeCombination(KeyCode.S, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN),
+            this::openSftpForCurrentTab);
+        acc.put(new KeyCodeCombination(KeyCode.R, KeyCombination.SHORTCUT_DOWN),
+            this::reconnectCurrentTab);
+        acc.put(new KeyCodeCombination(KeyCode.LEFT, KeyCombination.SHORTCUT_DOWN),
+            () -> switchTabRelative(-1));
+        acc.put(new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.SHORTCUT_DOWN),
+            () -> switchTabRelative(1));
+        for (int i = 1; i <= 9; i++) {
+            final int index = i - 1;
+            acc.put(new KeyCodeCombination(KeyCode.getKeyCode(String.valueOf(i)), KeyCombination.SHORTCUT_DOWN),
+                () -> selectTab(index));
+        }
         installActivityFilter(scene);
         installLockedKeySuppressor(scene);
     }
@@ -178,6 +194,37 @@ public class MainController {
         tabPane.getSelectionModel().select(next);
     }
 
+    private void duplicateCurrentTab() {
+        Tab current = tabPane.getSelectionModel().getSelectedItem();
+        if (current == null) return;
+        com.raindrop.storage.ConnectionProfile profile = tabManager.getTabProfile(current);
+        if (profile != null) tabManager.openTab(profile);
+    }
+
+    private void openSftpForCurrentTab() {
+        tabManager.openSftpForCurrentTab();
+    }
+
+    private void reconnectCurrentTab() {
+        Tab current = tabPane.getSelectionModel().getSelectedItem();
+        if (current == null) return;
+        tabManager.reconnectTab(current);
+    }
+
+    private void switchTabRelative(int delta) {
+        int size = tabPane.getTabs().size();
+        if (size <= 1) return;
+        int idx = tabPane.getSelectionModel().getSelectedIndex();
+        int next = ((idx + delta) % size + size) % size;
+        tabPane.getSelectionModel().select(next);
+    }
+
+    private void selectTab(int index) {
+        if (index < tabPane.getTabs().size()) {
+            tabPane.getSelectionModel().select(index);
+        }
+    }
+
     private void startMemoryMonitor() {
         updateMemoryStats();
         // 3s cadence (was 2s): memory usage rarely changes user-perceptibly
@@ -223,6 +270,10 @@ public class MainController {
         if (memoryMonitor != null) {
             memoryMonitor.stop();
             memoryMonitor = null;
+        }
+        if (lockStateListener != null) {
+            SecurityManager.getInstance().lockedProperty().removeListener(lockStateListener);
+            lockStateListener = null;
         }
     }
 
@@ -362,11 +413,6 @@ public class MainController {
         }
     }
 
-    private Window ownerWindow() {
-        Scene scene = tabPane == null ? null : tabPane.getScene();
-        return scene == null ? null : scene.getWindow();
-    }
-
     /**
      * Show a child stage as a stand-alone top-level window WITHOUT a parent
      * relationship. Reason: KDE/KWin (and some other Linux WMs) unconditionally
@@ -390,56 +436,10 @@ public class MainController {
      * and the geometry stays fullscreen.
      */
     private void showAsModalDialog(Stage stage) {
-        Window owner = ownerWindow();
-        javafx.scene.Node mainRoot = owner != null && owner.getScene() != null
-            ? owner.getScene().getRoot() : null;
-
-        stage.initStyle(StageStyle.UTILITY);
-        stage.setAlwaysOnTop(true);
-
-        if (mainRoot != null) mainRoot.setDisable(true);
-        stage.setOnHidden(e -> {
-            if (mainRoot != null) mainRoot.setDisable(false);
-        });
-
-        // sizeToScene() respects the FXML root's prefWidth/prefHeight and does
-        // proper layout calculation. Must call before showing and before centering.
-        stage.sizeToScene();
-
-        javafx.geometry.Rectangle2D b = ownerVisualBounds(owner);
-        stage.setX(b.getMinX() + (b.getWidth() - stage.getWidth()) / 2);
-        stage.setY(b.getMinY() + (b.getHeight() - stage.getHeight()) / 2);
-
-        // Re-center once after peer is mapped, defensively.
-        stage.setOnShown(e -> {
-            double w = stage.getWidth();
-            double h = stage.getHeight();
-            javafx.geometry.Rectangle2D rb = ownerVisualBounds(owner);
-            stage.setX(rb.getMinX() + (rb.getWidth() - w) / 2);
-            stage.setY(rb.getMinY() + (rb.getHeight() - h) / 2);
-        });
-
-        stage.show();
-        stage.requestFocus();
+        com.raindrop.util.DialogUtil.showDialog(stage);
     }
 
-    /**
-     * Centering target: screen visual bounds if the owner is maximized (or
-     * lies that it is), otherwise the owner's own rectangle. Picks whichever
-     * screen the owner's origin lives on; falls back to primary screen.
-     */
-    private javafx.geometry.Rectangle2D ownerVisualBounds(Window owner) {
-        if (owner instanceof Stage os && os.isMaximized()) {
-            return javafx.stage.Screen.getScreensForRectangle(
-                    os.getX(), os.getY(), 8, 8).stream().findFirst()
-                .orElse(javafx.stage.Screen.getPrimary()).getVisualBounds();
-        }
-        if (owner != null) {
-            return new javafx.geometry.Rectangle2D(
-                owner.getX(), owner.getY(), owner.getWidth(), owner.getHeight());
-        }
-        return javafx.stage.Screen.getPrimary().getVisualBounds();
-    }
+    
 
     public void openConnection(ConnectionProfile profile) {
         tabManager.openTab(profile);
@@ -452,24 +452,7 @@ public class MainController {
 
     public void showError(String message) {
         Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");  // TODO: i18n
-            alert.setHeaderText(null);
-            alert.setContentText(message);
-            ThemeManager.apply(alert);
-            // Do NOT initOwner: transient/owned top-levels cause KWin to
-            // un-maximize the primary Stage. Center manually instead.
-            Stage as = (Stage) alert.getDialogPane().getScene().getWindow();
-            as.setAlwaysOnTop(true);
-            Window owner = ownerWindow();
-            javafx.geometry.Rectangle2D b = ownerVisualBounds(owner);
-            alert.setOnShown(e -> {
-                double w = as.getWidth();
-                double h = as.getHeight();
-                as.setX(b.getMinX() + (b.getWidth() - w) / 2);
-                as.setY(b.getMinY() + (b.getHeight() - h) / 2);
-            });
-            alert.showAndWait();
+            com.raindrop.util.DialogUtil.showMessage("Error", message);
         });
     }
 
@@ -510,7 +493,8 @@ public class MainController {
         this.primaryStageRef = primaryStage;
         this.sceneRoot = rootStack;
         SecurityManager sm = SecurityManager.getInstance();
-        sm.lockedProperty().addListener((obs, wasLocked, nowLocked) -> onLockStateChanged(nowLocked));
+        lockStateListener = (obs, wasLocked, nowLocked) -> onLockStateChanged(nowLocked);
+        sm.lockedProperty().addListener(lockStateListener);
         if (sm.isUninitialized()) {
             openSetupDialog(primaryStage);
         } else {

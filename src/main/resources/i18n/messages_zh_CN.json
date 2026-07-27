@@ -99,8 +99,6 @@
     "theme": "终端主题",
     "font_size": "字体大小",
     "default_encoding": "默认编码",
-    "window_width": "窗口宽度",
-    "window_height": "窗口高度",
     "auto_lock_timeout": "自动锁定超时（秒）",
     "auto_lock_never": "0 = 永不",
     "master_password": "主密码"
@@ -153,14 +151,14 @@
     "error": "错误：{message}",
     "not_a_directory": "不是目录：{path}",
     "select_files_to_upload": "选择要上传的文件",
-    "select_regular_files": "请选择文件（不支持目录）",
+    "select_regular_files": "请选择文件",
     "select_target_dir": "选择目标目录",
-    "downloading": "正在下载 {count} 个文件...",
+    "downloading": "正在下载 {count} 项...（总大小：{size}）",
     "download_failed": "下载失败：{message}",
-    "download_complete": "下载完成（{count} 个文件）",
-    "uploading": "正在上传 {count} 个文件...",
+    "download_complete": "下载完成（{count} 项）",
+    "uploading": "正在上传 {count} 项...（总大小：{size}）",
     "upload_failed": "上传失败：{message}",
-    "upload_complete": "上传完成（{count} 个文件）",
+    "upload_complete": "上传完成（{count} 项）",
     "creating": "正在创建 {path} ...",
     "mkdir_failed": "创建目录失败：{message}",
     "created": "已创建 {path}",
@@ -173,6 +171,11 @@
     "deleted": "已删除 {count} 项",
     "parent_dir": "..（上级）",
     "upload_select": "选择要上传的文件",
+    "upload_choice": "请选择上传类型：",
+    "select_files": "选择文件",
+    "select_folder": "选择文件夹",
+    "scanning_folders": "正在扫描本地文件夹...",
+    "scanning_remote": "正在扫描远程目录...",
     "status_ready": "就绪"
   },
   "quick_connect": {
@@ -209,5 +212,20 @@
     "page_down": "向下翻页",
     "line_up": "向上一行",
     "line_down": "向下一行"
+  },
+  "tab": {
+    "duplicate": "复制",
+    "open_sftp": "SFTP",
+    "close": "关闭",
+    "reconnect": "重新连接"
+  },
+  "shortcuts": {
+    "duplicate_tab": "复制标签页",
+    "open_sftp": "打开 SFTP",
+    "reconnect_tab": "重新连接",
+    "close_tab": "关闭标签页",
+    "prev_tab": "上一个标签页",
+    "next_tab": "下一个标签页",
+    "select_tab_n": "切换到第 {n} 个标签页"
   }
 }

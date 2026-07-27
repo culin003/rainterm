@@ -101,6 +101,8 @@ public class SshTtyConnector implements TtyConnector {
         if (closed) return;
         closed = true;
         try { shell.close(); } catch (Exception ignored) {}
+        try { reader.close(); } catch (Exception ignored) {}
+        try { out.close(); } catch (Exception ignored) {}
         closeLatch.countDown();
     }
 }

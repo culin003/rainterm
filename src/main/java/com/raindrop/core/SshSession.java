@@ -17,34 +17,59 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class SshSession {
-    private SSHClient client;
-    private Session.Shell shell;
+    private volatile SSHClient client;
+    private volatile Session.Shell shell;
     private volatile SFTPClient sftpClient;
     private volatile boolean connected = false;
+    private volatile boolean disconnectRequested = false;
     private final ConnectionProfile profile;
+    private volatile java.nio.file.Path tempKeyFile;
 
     public SshSession(ConnectionProfile profile) {
         this.profile = profile;
     }
 
     public void connect() throws IOException {
-        client = new SSHClient();
-        client.addHostKeyVerifier(new PromiscuousVerifier());
-        client.connect(profile.getHost(), profile.getPort());
-
-        AuthMaterial auth = resolveAuthMaterial();
-        if (auth.password != null) {
-            client.authPassword(auth.username, auth.password);
-        } else if (auth.keyProvider != null) {
-            client.authPublickey(auth.username, auth.keyProvider);
-        } else {
-            throw new IOException("No authentication method provided");
+        if (disconnectRequested) {
+            throw new IOException("Connection cancelled by user");
         }
 
-        Session session = client.startSession();
-        session.allocateDefaultPTY();
-        shell = session.startShell();
-        connected = true;
+        try {
+            client = new SSHClient();
+            client.addHostKeyVerifier(new PromiscuousVerifier());
+
+            if (disconnectRequested) {
+                throw new IOException("Connection cancelled by user");
+            }
+
+            client.connect(profile.getHost(), profile.getPort());
+
+            if (disconnectRequested) {
+                throw new IOException("Connection cancelled by user");
+            }
+
+            AuthMaterial auth = resolveAuthMaterial();
+            if (auth.password != null) {
+                client.authPassword(auth.username, auth.password);
+            } else if (auth.keyProvider != null) {
+                client.authPublickey(auth.username, auth.keyProvider);
+            } else {
+                throw new IOException("No authentication method provided");
+            }
+
+            if (disconnectRequested) {
+                throw new IOException("Connection cancelled by user");
+            }
+
+            Session session = client.startSession();
+            session.allocateDefaultPTY();
+            shell = session.startShell();
+            connected = true;
+        } catch (IOException e) {
+            // Clean up SSHClient, temp key file, and any partial session on failure
+            disconnect();
+            throw e;
+        }
     }
 
     /**
@@ -131,7 +156,7 @@ public class SshSession {
                 } catch (UnsupportedOperationException ignored) {
                     // Windows: skip POSIX perms
                 }
-                tmp.toFile().deleteOnExit();
+                this.tempKeyFile = tmp;
                 a.keyProvider = keyPass != null
                     ? client.loadKeys(tmp.toString(), keyPass.toCharArray())
                     : client.loadKeys(tmp.toString());
@@ -159,6 +184,7 @@ public class SshSession {
     }
 
     public void disconnect() {
+        disconnectRequested = true;
         connected = false;
         try {
             if (sftpClient != null) sftpClient.close();
@@ -167,9 +193,18 @@ public class SshSession {
         try {
             if (shell != null) shell.close();
         } catch (Exception ignored) {}
+        shell = null;
         try {
             if (client != null) client.disconnect();
         } catch (IOException ignored) {}
+        client = null;
+        // Delete temporary key file if it exists
+        if (tempKeyFile != null) {
+            try {
+                java.nio.file.Files.delete(tempKeyFile);
+            } catch (Exception ignored) {}
+            tempKeyFile = null;
+        }
     }
 
     /**

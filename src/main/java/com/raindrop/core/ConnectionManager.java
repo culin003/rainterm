@@ -52,7 +52,7 @@ public class ConnectionManager {
      * against the same profile, and register it under the same owner.
      */
     public SshSession reconnect(Object owner) throws IOException {
-        SshSession old = byOwner.get(owner);
+        SshSession old = byOwner.remove(owner);
         if (old == null) throw new IOException("No session registered for owner " + owner);
         ConnectionProfile profile = old.getProfile();
         try { old.disconnect(); } catch (Exception ignored) {}

@@ -127,11 +127,7 @@ public class SessionListPaneController {
         alert.setTitle(I18nManager.t("session_list.delete"));
         alert.setHeaderText(null);
         alert.setContentText(I18nManager.t("session_list.delete_confirm", "name", p.getName()));
-        com.raindrop.util.ThemeManager.apply(alert);
-        if (sessionTree.getScene() != null && sessionTree.getScene().getWindow() != null) {
-            alert.initOwner(sessionTree.getScene().getWindow());
-        }
-        alert.showAndWait().ifPresent(bt -> {
+        com.raindrop.util.DialogUtil.showBlockingDialog(alert).ifPresent(bt -> {
             if (bt == ButtonType.OK) {
                 try {
                     repository.delete(p.getId());

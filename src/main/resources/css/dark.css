@@ -151,6 +151,19 @@
 
 .progress-bar {
     -fx-accent: #4ec9b0;
+    -fx-pref-height: 18;
+}
+
+.progress-bar .track {
+    -fx-background-color: #3c3c3c;
+    -fx-background-insets: 0;
+    -fx-background-radius: 3;
+}
+
+.progress-bar .bar {
+    -fx-background-insets: 0;
+    -fx-background-radius: 3;
+    -fx-padding: 0;
 }
 
 .separator {

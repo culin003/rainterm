@@ -18,8 +18,6 @@ public class SettingsViewController {
     @FXML private Label fontSizeLabel;
     @FXML private Label encodingLabel;
     @FXML private Label languageLabel;
-    @FXML private Label widthLabel;
-    @FXML private Label heightLabel;
     @FXML private Label idleTimeoutLabel;
     @FXML private Label idleTimeoutHint;
     @FXML private Label masterPasswordLabel;
@@ -31,8 +29,6 @@ public class SettingsViewController {
     @FXML private ComboBox<String> encodingCombo;
     @FXML private ComboBox<String> languageCombo;
     @FXML private Spinner<Integer> fontSizeSpinner;
-    @FXML private Spinner<Integer> widthSpinner;
-    @FXML private Spinner<Integer> heightSpinner;
     @FXML private Spinner<Integer> idleTimeoutSpinner;
 
     private final ConfigManager config = ConfigManager.getInstance();
@@ -49,8 +45,6 @@ public class SettingsViewController {
         fontSizeLabel.setText(I18nManager.t("settings.font_size"));
         encodingLabel.setText(I18nManager.t("settings.default_encoding"));
         languageLabel.setText(I18nManager.t("settings.language"));
-        widthLabel.setText(I18nManager.t("settings.window_width"));
-        heightLabel.setText(I18nManager.t("settings.window_height"));
         idleTimeoutLabel.setText(I18nManager.t("settings.auto_lock_timeout"));
         idleTimeoutHint.setText(I18nManager.t("settings.auto_lock_never"));
         masterPasswordLabel.setText(I18nManager.t("settings.master_password"));
@@ -79,12 +73,6 @@ public class SettingsViewController {
         fontSizeSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(
             8, 32, config.getInt(ConfigManager.KEY_FONT_SIZE, 14)));
 
-        widthSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(
-            600, 3840, config.getInt(ConfigManager.KEY_WINDOW_WIDTH, 1200), 20));
-
-        heightSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(
-            400, 2160, config.getInt(ConfigManager.KEY_WINDOW_HEIGHT, 800), 20));
-
         idleTimeoutSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(
             0, 86400, config.getInt(ConfigManager.KEY_AUTO_LOCK_TIMEOUT_SECONDS, 600), 30));
     }
@@ -94,8 +82,6 @@ public class SettingsViewController {
         config.set(ConfigManager.KEY_TERMINAL_THEME, themeCombo.getValue());
         config.set(ConfigManager.KEY_DEFAULT_ENCODING, encodingCombo.getValue());
         config.set(ConfigManager.KEY_FONT_SIZE, String.valueOf(fontSizeSpinner.getValue()));
-        config.set(ConfigManager.KEY_WINDOW_WIDTH, String.valueOf(widthSpinner.getValue()));
-        config.set(ConfigManager.KEY_WINDOW_HEIGHT, String.valueOf(heightSpinner.getValue()));
         config.set(ConfigManager.KEY_AUTO_LOCK_TIMEOUT_SECONDS, String.valueOf(idleTimeoutSpinner.getValue()));
 
         // Save language setting
