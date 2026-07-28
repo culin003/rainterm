@@ -62,7 +62,7 @@ dependencies {
     }
 
     // Testing
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
+    testImplementation("org.junit.jupiter:junit-jupiter:6.1.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     // Architectural rules — enforce project invariants (virtual threads, no HashMap,
