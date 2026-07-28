@@ -2,6 +2,7 @@ package com.raindrop.core;
 
 import com.raindrop.storage.ConnectionProfile;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
@@ -14,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Tests for SshSession.
  * Note: These tests require network access to the test server.
  */
+@Tag("integration")
 public class SshSessionTest {
 
     @BeforeAll

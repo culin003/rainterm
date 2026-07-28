@@ -1,7 +1,7 @@
 package com.raindrop.terminal;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Terminal color themes.
@@ -52,7 +52,7 @@ public class TerminalTheme {
     );
 
     private static Map<Integer, String> createDarkColors() {
-        Map<Integer, String> colors = new HashMap<>();
+        Map<Integer, String> colors = new ConcurrentHashMap<>();
         colors.put(0, "#000000");   // Black
         colors.put(1, "#cc0000");   // Red
         colors.put(2, "#00cc00");   // Green
@@ -65,7 +65,7 @@ public class TerminalTheme {
     }
 
     private static Map<Integer, String> createLightColors() {
-        Map<Integer, String> colors = new HashMap<>();
+        Map<Integer, String> colors = new ConcurrentHashMap<>();
         colors.put(0, "#000000");
         colors.put(1, "#cc0000");
         colors.put(2, "#009900");
@@ -78,7 +78,7 @@ public class TerminalTheme {
     }
 
     private static Map<Integer, String> createGreenOnBlackColors() {
-        Map<Integer, String> colors = new HashMap<>();
+        Map<Integer, String> colors = new ConcurrentHashMap<>();
         colors.put(0, "#000000");
         colors.put(1, "#ff0000");
         colors.put(2, "#00ff00");
@@ -91,7 +91,7 @@ public class TerminalTheme {
     }
 
     private static Map<Integer, String> createSolarizedDarkColors() {
-        Map<Integer, String> colors = new HashMap<>();
+        Map<Integer, String> colors = new ConcurrentHashMap<>();
         colors.put(0, "#073642");
         colors.put(1, "#dc322f");
         colors.put(2, "#859900");

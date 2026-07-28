@@ -10,8 +10,8 @@ import com.techsenger.jeditermfx.ui.settings.SettingsProvider;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 标准菜单项文本的映射表。注意：jeditermfx 使用下划线作为加速键前缀，
@@ -26,7 +26,7 @@ import java.util.Map;
 public class RaindropTerminalPanel extends TerminalPanel {
     private ContextMenu cachedPopup;
 
-    private static final Map<String, String> menuTextMap = new HashMap<>();
+    private static final Map<String, String> menuTextMap = new ConcurrentHashMap<>();
     static {
         menuTextMap.put("Open as URL", "terminal.open_as_url");
         menuTextMap.put("Copy", "terminal.copy");

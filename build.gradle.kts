@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "com.raindrop"
-version = "1.0.1"
+version = "1.0.2"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
@@ -14,8 +14,21 @@ java {
 }
 
 repositories {
+    // Maven Central is the primary source for everything. Listed first so it is
+    // consulted before the JetBrains repo for any shared coordinates.
     mavenCentral()
-    maven { url = uri("https://packages.jetbrains.team/maven/p/ij/intellij-dependencies") }
+    // JediTerm (com.techsenger.jeditermfx) and its JetBrains transitives live here.
+    // Restrict this repo to ONLY those groups so unrelated dependencies (e.g.
+    // org.bouncycastle, pulled in via sshj) are never resolved against it — that
+    // avoids build failures when packages.jetbrains.team is slow/unreachable and
+    // Gradle tries to list versions there for a dynamic range like [1.80,1.81).
+    maven {
+        url = uri("https://packages.jetbrains.team/maven/p/ij/intellij-dependencies")
+        content {
+            includeGroup("com.techsenger.jeditermfx")
+            includeGroupByRegex("org\\.jetbrains(\\..*)?")
+        }
+    }
 }
 
 javafx {
@@ -24,12 +37,12 @@ javafx {
 }
 
 dependencies {
-    // SSH/SFTP
+    // SSH/SFTP — 0.40.0 is the latest published release as of this writing.
     implementation("com.hierynomus:sshj:0.40.0")
     implementation("org.slf4j:slf4j-simple:2.0.9")
 
     // SQLite
-    implementation("org.xerial:sqlite-jdbc:3.42.0.0")
+    implementation("org.xerial:sqlite-jdbc:3.46.1.3")
 
     // Encryption
     implementation("org.jasypt:jasypt:1.9.3")
@@ -39,7 +52,7 @@ dependencies {
     implementation("org.kordamp.ikonli:ikonli-fontawesome5-pack:12.3.1")
 
     // JSON parsing for i18n
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.16.1")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.2")
 
     // JavaFX terminal emulator (Canvas-based port of JediTerm)
     implementation("com.techsenger.jeditermfx:jeditermfx-ui:1.1.0") {
@@ -51,6 +64,10 @@ dependencies {
     // Testing
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    // Architectural rules — enforce project invariants (virtual threads, no HashMap,
+    // no banned APIs). See ArchRulesTest.
+    testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
 }
 
 application {
@@ -58,7 +75,11 @@ application {
 }
 
 tasks.test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        // Integration tests hit a real SSH server and are opt-in via the
+        // `integrationTest` task or by unsetting the excludeTags filter.
+        excludeTags("integration")
+    }
     // Route tests to a throwaway on-disk SQLite under build/ so they never
     // touch ~/.raindrop/raindrop.db. Using a file DB (not :memory:) because
     // several call sites use try-with-resources on DatabaseManager.getConnection(),
@@ -82,6 +103,19 @@ tasks.test {
         testDb.delete()
         sidecars.forEach { it.delete() }
     }
+}
+
+// Opt-in task for integration tests that require a running SSH server on the
+// test machine. Not wired into `check` — run manually with `./gradlew integrationTest`.
+tasks.register<Test>("integrationTest") {
+    description = "Runs @Tag(\"integration\") tests that require a live SSH server."
+    group = "verification"
+    useJUnitPlatform {
+        includeTags("integration")
+    }
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    shouldRunAfter(tasks.test)
 }
 
 tasks.jar {

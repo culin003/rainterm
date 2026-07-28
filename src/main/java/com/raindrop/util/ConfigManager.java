@@ -6,7 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -132,7 +132,7 @@ public class ConfigManager {
      * Get all settings.
      */
     public Map<String, String> getAll() {
-        Map<String, String> settings = new HashMap<>();
+        Map<String, String> settings = new LinkedHashMap<>();
         try (Connection conn = DatabaseManager.getConnection();
              PreparedStatement ps = conn.prepareStatement("SELECT key, value FROM app_setting");
              ResultSet rs = ps.executeQuery()) {
