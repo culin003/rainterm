@@ -67,8 +67,8 @@ public class SettingsViewController {
             }
             @Override public String fromString(String s) { return s; }
         });
-        String currentLang = config.get(I18nManager.KEY_LANGUAGE, I18nManager.LANG_ZH_CN);
-        languageCombo.setValue(languages.containsKey(currentLang) ? currentLang : I18nManager.LANG_ZH_CN);
+        String currentLang = config.get(I18nManager.KEY_LANGUAGE, I18nManager.LANG_EN_US);
+        languageCombo.setValue(languages.containsKey(currentLang) ? currentLang : I18nManager.LANG_EN_US);
 
         fontSizeSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(
             8, 32, config.getInt(ConfigManager.KEY_FONT_SIZE, 14)));

@@ -5,6 +5,7 @@ import com.raindrop.security.SecurityManager;
 import com.raindrop.storage.DatabaseManager;
 import com.raindrop.ui.MainController;
 import com.raindrop.util.ConfigManager;
+import com.raindrop.util.FontManager;
 import com.raindrop.util.ThemeManager;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -21,6 +22,8 @@ public class RaindropApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws IOException {
+        FontManager.loadBundledFonts();
+
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/MainView.fxml"));
         Parent root = loader.load();
         mainController = loader.getController();

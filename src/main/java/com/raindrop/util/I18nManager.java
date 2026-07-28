@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -40,16 +39,7 @@ public class I18nManager {
         if (savedLang != null && isValidLanguage(savedLang)) {
             setLanguage(savedLang);
         } else {
-            String systemLang = Locale.getDefault().toString();
-            if (systemLang.startsWith("zh")) {
-                if (systemLang.contains("TW") || systemLang.contains("HK")) {
-                    setLanguage(LANG_ZH_TW);
-                } else {
-                    setLanguage(LANG_ZH_CN);
-                }
-            } else {
-                setLanguage(LANG_EN_US);
-            }
+            setLanguage(LANG_EN_US);
         }
     }
 

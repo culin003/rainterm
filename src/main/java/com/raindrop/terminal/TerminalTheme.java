@@ -29,8 +29,8 @@ public class TerminalTheme {
      */
     public String getCssStyle() {
         return String.format(
-            "-fx-control-inner-background: %s; -fx-text-fill: %s; -fx-font-family: 'Monospace'; -fx-font-size: 14px;",
-            background, foreground
+            "-fx-control-inner-background: %s; -fx-text-fill: %s; -fx-font-family: '%s', 'Monospace'; -fx-font-size: 14px;",
+            background, foreground, com.raindrop.util.FontManager.monoCjkFamily()
         );
     }
 

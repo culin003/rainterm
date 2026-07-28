@@ -65,7 +65,7 @@ public class RaindropSettingsProvider extends DefaultSettingsProvider {
 
     @Override
     public Font getTerminalFont() {
-        return Font.font("Monospaced", fontSize);
+        return Font.font(com.raindrop.util.FontManager.monoCjkFamily(), fontSize);
     }
 
     @Override
