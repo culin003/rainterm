@@ -69,4 +69,30 @@ class I18nManagerTest {
             I18nManager.getInstance().setLanguage("invalid_lang");
         });
     }
+
+    /**
+     * Verify the duplicate-connection feature's i18n keys resolve in all
+     * three supported languages. {@code I18nManager} falls back to the key
+     * string itself when a translation is missing, so the strongest signal
+     * is that the returned value differs from the key.
+     */
+    @Test
+    void testDuplicateConnectionKeysResolveInAllLanguages() {
+        String[] keys = {
+            "connection_dialog.title_duplicate",
+            "connection_dialog.copy_suffix",
+            "session_list.duplicate"
+        };
+        for (String code : new String[] {
+                I18nManager.LANG_EN_US, I18nManager.LANG_ZH_CN, I18nManager.LANG_ZH_TW}) {
+            I18nManager.getInstance().setLanguage(code);
+            for (String k : keys) {
+                String translated = I18nManager.t(k);
+                assertNotNull(translated, "Missing translation for " + k + " in " + code);
+                assertNotEquals(k, translated,
+                    "I18nManager returned the key for " + k + " in " + code
+                        + " — JSON file is missing this entry");
+            }
+        }
+    }
 }
