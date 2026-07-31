@@ -15,8 +15,25 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 
 public class SshSession {
+    /**
+     * Terminal type advertised to the SSH server for the PTY. Set explicitly
+     * to {@code xterm-256color} (rather than relying on the server's
+     * default) so that remote full-screen applications — notably
+     * {@code vim} — see a terminfo entry that matches the escape sequences
+     * JediTermFX actually sends.
+     *
+     * <p>Symptom of getting this wrong: in a remote {@code vim}, the
+     * Delete key acts as case-toggle (~), arrow keys insert literal
+     * {@code ^[A}/{@code ^[B}/{@code ^[C}/{@code ^[D} characters, and
+     * PageUp/PageDown do not scroll — all because the remote shell's
+     * {@code $TERM} resolves to a terminfo entry that does not define
+     * those keycodes.
+     */
+    private static final String PTY_TYPE = "xterm-256color";
+
     private volatile SSHClient client;
     private volatile Session.Shell shell;
     private volatile SFTPClient sftpClient;
@@ -62,7 +79,18 @@ public class SshSession {
             }
 
             Session session = client.startSession();
-            session.allocateDefaultPTY();
+            // Advertise xterm-256color explicitly. allocateDefaultPTY() leaves
+            // TERM to the server default (often `xterm` or `dumb`), which makes
+            // remote vim mis-bind arrow keys, Delete, PageUp/PageDown, etc.
+            // cols/rows/width/height = 0 lets the server use its own defaults
+            // for the moment; SshTtyConnector.resize() reports the actual
+            // JediTermFX terminal size once the emulator starts.
+            // emptyMap for PTY modes → keep the server's ECHO/ICANON/etc. defaults.
+            session.allocatePTY(PTY_TYPE, 0, 0, 0, 0, Collections.emptyMap());
+            // COLORTERM=truecolor is the modern signal for 24-bit color support.
+            // Remote vim checks this (and $TERM=*256color) before enabling
+            // termguicolors; without it you get the 16-color fallback.
+            session.setEnvVar("COLORTERM", "truecolor");
             shell = session.startShell();
             connected = true;
         } catch (IOException e) {
