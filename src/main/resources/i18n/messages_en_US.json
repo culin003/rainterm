@@ -30,6 +30,7 @@
   "connection_dialog": {
     "title_new": "New Connection",
     "title_edit": "Edit Connection",
+    "title_duplicate": "Duplicate Connection",
     "name": "Name",
     "host": "Host",
     "port": "Port",
@@ -54,7 +55,8 @@
     "error_name_host_required": "Name and Host are required.",
     "error_username_required": "Username is required for inline auth.",
     "error_credential_required": "Please select a credential.",
-    "error_key_path_required": "Key path is required for key auth."
+    "error_key_path_required": "Key path is required for key auth.",
+    "copy_suffix": "Copy"
   },
   "session_list": {
     "title": "Session List",
@@ -63,6 +65,7 @@
     "new": "New",
     "connect": "Connect",
     "edit": "Edit",
+    "duplicate": "Duplicate",
     "delete": "Delete",
     "delete_confirm": "Delete '{name}'?",
     "delete_success": "Deleted: {name}",

@@ -44,9 +44,11 @@ public class SessionListPaneController {
         connect.setOnAction(e -> openSelected());
         MenuItem edit = new MenuItem(I18nManager.t("session_list.edit"));
         edit.setOnAction(e -> editSelected());
+        MenuItem duplicate = new MenuItem(I18nManager.t("session_list.duplicate"));
+        duplicate.setOnAction(e -> duplicateSelected());
         MenuItem delete = new MenuItem(I18nManager.t("session_list.delete"));
         delete.setOnAction(e -> deleteSelected());
-        sessionTree.setContextMenu(new ContextMenu(connect, edit, delete));
+        sessionTree.setContextMenu(new ContextMenu(connect, edit, duplicate, delete));
 
         filterField.textProperty().addListener((obs, o, n) -> renderTree(n));
 
@@ -117,6 +119,13 @@ public class SessionListPaneController {
         ConnectionProfile p = getSelectedProfile();
         if (p != null && mainController != null) {
             mainController.openNewConnectionDialog(p);
+        }
+    }
+
+    private void duplicateSelected() {
+        ConnectionProfile p = getSelectedProfile();
+        if (p != null && mainController != null) {
+            mainController.openDuplicateConnectionDialog(p);
         }
     }
 

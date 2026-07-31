@@ -365,6 +365,27 @@ public class MainController {
         }
     }
 
+    public void openDuplicateConnectionDialog(ConnectionProfile source) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ConnectionDialog.fxml"));
+            Parent root = loader.load();
+            ConnectionDialogController controller = loader.getController();
+            controller.setMainController(this);
+            // setDuplicateSource copies the source's fields into the dialog and
+            // flips the controller into "duplicate" mode: the resulting save
+            // will INSERT a new row instead of UPDATEing the source's id.
+            controller.setDuplicateSource(source);
+            Scene scene = new Scene(root, 560, 520);
+            ThemeManager.apply(scene);
+            Stage stage = new Stage();
+            stage.setTitle(I18nManager.t("connection_dialog.title_duplicate"));
+            stage.setScene(scene);
+            showAsModalDialog(stage);
+        } catch (IOException e) {
+            showError(I18nManager.t("errors.load_dialog_failed", "message", e.getMessage()));
+        }
+    }
+
     @FXML
     private void onManageCredentials() {
         try {

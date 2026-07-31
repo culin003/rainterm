@@ -30,6 +30,7 @@
   "connection_dialog": {
     "title_new": "新建连接",
     "title_edit": "编辑连接",
+    "title_duplicate": "复制连接",
     "name": "名称",
     "host": "主机",
     "port": "端口",
@@ -54,7 +55,8 @@
     "error_name_host_required": "名称和主机是必填项。",
     "error_username_required": "内联认证需要填写用户名。",
     "error_credential_required": "请选择一个凭证。",
-    "error_key_path_required": "密钥认证需要填写密钥路径。"
+    "error_key_path_required": "密钥认证需要填写密钥路径。",
+    "copy_suffix": "副本"
   },
   "session_list": {
     "title": "会话列表",
@@ -63,6 +65,7 @@
     "new": "新建",
     "connect": "连接",
     "edit": "编辑",
+    "duplicate": "复制",
     "delete": "删除",
     "delete_confirm": "确定要删除 '{name}' 吗？",
     "delete_success": "已删除：{name}",

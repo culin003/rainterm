@@ -69,6 +69,7 @@ public class ConnectionDialogController {
 
     private MainController mainController;
     private ConnectionProfile existingProfile;
+    private boolean duplicating;
 
     public void setMainController(MainController mainController) {
         this.mainController = mainController;
@@ -176,6 +177,15 @@ public class ConnectionDialogController {
         applyVisibility(type);
     }
 
+    public void setDuplicateSource(ConnectionProfile source) {
+        this.duplicating = true;
+        setProfile(source);
+        // Encrypted password / key passphrase are carried over automatically in
+        // createProfile() when the fields are left blank. Only tweak the name so
+        // the user can tell the copy apart from the original.
+        nameField.setText(source.getName() + " - " + I18nManager.t("connection_dialog.copy_suffix"));
+    }
+
     private void applyVisibility(String type) {
         boolean isCredential = AUTH_CREDENTIAL.equals(type);
         boolean isPasswordInline = AUTH_PASSWORD_INLINE.equals(type);
@@ -239,7 +249,7 @@ public class ConnectionDialogController {
         if (profile == null) return;
         try {
             ProfileRepository repo = new ProfileRepository();
-            if (existingProfile != null) {
+            if (existingProfile != null && !duplicating) {
                 profile.setId(existingProfile.getId());
                 repo.update(profile);
             } else {
