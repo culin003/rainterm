@@ -29,3 +29,9 @@ Thumbs.db
 
 # Encryption keys
 *.key
+
+# Local secrets — never commit. Holds the GitHub PAT used for push/release.
+.env
+.env.*
+!.env.example
+.secrets
