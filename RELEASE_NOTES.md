@@ -1,4 +1,68 @@
-# Release Notes — Raindrop v1.1.0
+# Release Notes — Raindrop v1.2.0
+
+Raindrop 是一款基于 JavaFX 的跨平台 SSH/SFTP 桌面管理工具，对标 XShell / MobaXterm。
+
+---
+
+## 本次更新 (v1.2.0)
+
+### ✨ 终端字体独立选择
+
+设置面板新增 **Terminal font** 下拉框，列出系统所有等宽字体（自动过滤非等宽字体），内置 Sarasa Mono SC 排在首位。
+
+- 切换字体后所有已打开的终端标签页实时生效，无需重连
+- 字体预览区域直接显示当前字体/字号效果
+
+### ✨ 界面字体和字号独立设置
+
+新增 **Interface font** / **Interface font size** 两个设置项，独立于主题 CSS 控制整个窗口的字体。空白表示跟随主题默认。
+
+### ✨ 终端字号缩放快捷键
+
+在任何终端标签页上：
+
+| 操作 | 快捷键 |
+|------|--------|
+| 放大字号 | `Ctrl + =` / `Ctrl + 滚轮上` |
+| 缩小字号 | `Ctrl + -` / `Ctrl + 滚轮下` |
+| 恢复默认 | `Ctrl + 0` |
+
+缩放后的字号自动持久化到配置，重启后保持。
+
+### 🔧 构建优化
+
+- **Ikonli 图标库** 12.3.1 → 12.4.0
+- **sqlite-jdbc 瘦身**：新增 Gradle 任务 `slimSqliteJar`，从 24.6 MB 的 fat JAR 中仅保留目标平台的 JNI 库；瘦身后的 JAR 在 `jpackageImage` 阶段自动替换
+- **jlink 压缩级别**：`--compress 2` → `--compress zip-9`，产物体积进一步减小约 2%
+
+### 🔧 代码整理
+
+- JediTermFX 内部反射访问（`myStyleState`、`myRepaintTimeLine`、`setDefaultStyle`）集中到新建的 `TerminalPanelInternals` 工具类，各调用方不再直接使用 `java.lang.reflect`
+- `MainController` 工具栏初始化和侧边栏逻辑拆分为独立方法
+- 侧边栏固定宽度 330px，不再可拖拽调整
+
+### 测试
+
+- 新增 `I18nManagerTest.testFontSettingKeysResolveInAllLanguages` 回归测试，逐语言校验 7 个字体设置相关 key
+
+### i18n
+
+新增 7 个 key（三语）：
+
+| Key | English | 简体中文 | 繁體中文 |
+|-----|---------|---------|---------|
+| `settings.font_family` | Terminal font | 终端字体 | 終端字型 |
+| `settings.font_preview` | Preview | 预览 | 預覽 |
+| `settings.font_preview_text` | AaBbCc 0O1lI 中文测试 | AaBbCc 0O1lI 中文测试 | AaBbCc 0O1lI 中文測試 |
+| `settings.ui_font_family` | Interface font | 界面字体 | 介面字型 |
+| `settings.ui_font_size` | Interface font size | 界面字体大小 | 介面字型大小 |
+| `settings.font_default` | (theme default) | （跟随主题） | （跟隨佈景主題） |
+
+---
+
+## 历史版本
+
+### v1.1.0
 
 Raindrop 是一款基于 JavaFX 的跨平台 SSH/SFTP 桌面管理工具，对标 XShell / MobaXterm。
 
