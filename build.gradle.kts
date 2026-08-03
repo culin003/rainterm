@@ -2,7 +2,7 @@ plugins {
     java
     application
     id("org.openjfx.javafxplugin") version "0.1.0"
-    id("org.beryx.runtime") version "1.13.1"
+    id("org.beryx.runtime") version "2.0.1"
 }
 
 import java.util.zip.ZipEntry
