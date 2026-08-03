@@ -5,7 +5,6 @@ import com.techsenger.jeditermfx.core.model.TerminalTextBuffer;
 import com.techsenger.jeditermfx.ui.JediTermFxWidget;
 import com.techsenger.jeditermfx.ui.TerminalPanel;
 import com.techsenger.jeditermfx.ui.settings.SettingsProvider;
-import javafx.animation.Timeline;
 
 /**
  * JediTermFX widget wired to {@link RaindropTerminalPanel} so the context-menu
@@ -30,30 +29,25 @@ public class RaindropJediTermFxWidget extends JediTermFxWidget {
         }
     }
 
-    @Override
-    public void close() {
-        // Stop the internal repaint timer before the TerminalPanel is garbage
-        // collected. JediTermFX's WeakRedrawTimer uses a WeakReference to the
-        // TerminalPanel; when the ref is cleared, handle() tries to cast the
-        // ActionEvent source to Timeline, but JavaFX sometimes delivers a
-        // KeyFrame instead, causing a ClassCastException. Stopping the timer
-        // preemptively avoids this.
-        stopRepaintTimer();
-        super.close();
+    /** Re-measure the character grid after the settings provider's font changed. */
+    public void refreshFont() {
+        TerminalPanel p = getTerminalPanel();
+        if (p instanceof RaindropTerminalPanel rp) {
+            rp.refreshFont();
+        }
     }
 
-    private void stopRepaintTimer() {
-        TerminalPanel panel = getTerminalPanel();
-        if (panel == null) return;
-        try {
-            var field = TerminalPanel.class.getDeclaredField("myRepaintTimeLine");
-            field.setAccessible(true);
-            Timeline timeline = (Timeline) field.get(panel);
-            if (timeline != null) {
-                timeline.stop();
-            }
-        } catch (Exception ignored) {
-            // Best-effort: the field name is stable across jeditermfx 1.1.x.
-        }
+    /**
+     * Refresh the buffer's default text style so a live theme switch also recolors
+     * cells that were painted without explicit SGR colors (SSH banner / MOTD).
+     */
+    public void refreshDefaultStyle(RaindropSettingsProvider settings) {
+        TerminalPanelInternals.setDefaultStyle(getTerminalPanel(), settings.getDefaultStyle());
+    }
+
+    @Override
+    public void close() {
+        TerminalPanelInternals.stopRepaintTimer(getTerminalPanel());
+        super.close();
     }
 }

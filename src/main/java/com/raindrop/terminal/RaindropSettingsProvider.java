@@ -16,10 +16,12 @@ import javafx.scene.text.Font;
 public class RaindropSettingsProvider extends DefaultSettingsProvider {
     private volatile TerminalTheme theme;
     private volatile double fontSize;
+    private volatile String fontFamily;
 
-    public RaindropSettingsProvider(TerminalTheme theme, double fontSize) {
+    public RaindropSettingsProvider(TerminalTheme theme, double fontSize, String fontFamily) {
         this.theme = theme;
         this.fontSize = fontSize;
+        this.fontFamily = com.raindrop.util.FontManager.resolveTerminalFamily(fontFamily);
     }
 
     public void setTheme(TerminalTheme theme) {
@@ -28,6 +30,10 @@ public class RaindropSettingsProvider extends DefaultSettingsProvider {
 
     public void setFontSize(double fontSize) {
         this.fontSize = fontSize;
+    }
+
+    public void setFontFamily(String fontFamily) {
+        this.fontFamily = com.raindrop.util.FontManager.resolveTerminalFamily(fontFamily);
     }
 
     public TerminalTheme getTheme() {
@@ -65,7 +71,7 @@ public class RaindropSettingsProvider extends DefaultSettingsProvider {
 
     @Override
     public Font getTerminalFont() {
-        return Font.font(com.raindrop.util.FontManager.monoCjkFamily(), fontSize);
+        return Font.font(fontFamily, fontSize);
     }
 
     @Override

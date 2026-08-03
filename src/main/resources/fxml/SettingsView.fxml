@@ -16,23 +16,35 @@
             <Label fx:id="themeLabel" text="" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
             <ComboBox fx:id="themeCombo" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-            <Label fx:id="fontSizeLabel" text="" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-            <Spinner fx:id="fontSizeSpinner" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+            <Label fx:id="fontFamilyLabel" text="" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="fontFamilyCombo" maxWidth="Infinity" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
-            <Label fx:id="encodingLabel" text="" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-            <ComboBox fx:id="encodingCombo" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+            <Label fx:id="fontSizeLabel" text="" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <Spinner fx:id="fontSizeSpinner" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
-            <Label fx:id="languageLabel" text="" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-            <ComboBox fx:id="languageCombo" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+            <Label fx:id="fontPreviewLabel" text="" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <Label fx:id="fontPreview" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
-            <Label fx:id="idleTimeoutLabel" text="" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-            <HBox spacing="8" alignment="CENTER_LEFT" GridPane.rowIndex="4" GridPane.columnIndex="1">
+            <Label fx:id="uiFontFamilyLabel" text="" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="uiFontFamilyCombo" maxWidth="Infinity" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+            <Label fx:id="uiFontSizeLabel" text="" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+            <Spinner fx:id="uiFontSizeSpinner" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+            <Label fx:id="encodingLabel" text="" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="encodingCombo" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+            <Label fx:id="languageLabel" text="" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="languageCombo" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+
+            <Label fx:id="idleTimeoutLabel" text="" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+            <HBox spacing="8" alignment="CENTER_LEFT" GridPane.rowIndex="8" GridPane.columnIndex="1">
                 <Spinner fx:id="idleTimeoutSpinner"/>
                 <Label fx:id="idleTimeoutHint" text="" style="-fx-text-fill: #888;"/>
             </HBox>
 
-            <Label fx:id="masterPasswordLabel" text="" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-            <Button fx:id="changeMasterPasswordButton" text="" onAction="#onChangeMasterPassword" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+            <Label fx:id="masterPasswordLabel" text="" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
+            <Button fx:id="changeMasterPasswordButton" text="" onAction="#onChangeMasterPassword" GridPane.rowIndex="9" GridPane.columnIndex="1"/>
         </GridPane>
     </center>
     <bottom>

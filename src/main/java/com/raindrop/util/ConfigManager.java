@@ -149,6 +149,9 @@ public class ConfigManager {
     public static final String KEY_DEFAULT_ENCODING = "default_encoding";
     public static final String KEY_TERMINAL_THEME = "terminal_theme";
     public static final String KEY_FONT_SIZE = "font_size";
+    public static final String KEY_TERMINAL_FONT_FAMILY = "terminal_font_family";
+    public static final String KEY_UI_FONT_FAMILY = "ui_font_family";
+    public static final String KEY_UI_FONT_SIZE = "ui_font_size";
     public static final String KEY_WINDOW_WIDTH = "window_width";
     public static final String KEY_WINDOW_HEIGHT = "window_height";
 

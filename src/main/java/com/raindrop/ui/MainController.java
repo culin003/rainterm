@@ -31,6 +31,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import javafx.util.Duration;
 import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -39,7 +40,6 @@ import java.io.IOException;
 
 public class MainController {
     private static final String KEY_SIDEBAR_VISIBLE = "sidebar_visible";
-    private static final double DEFAULT_DIVIDER = 0.22;
 
     @FXML private TabPane tabPane;
     @FXML private Label statusLabel;
@@ -59,7 +59,6 @@ public class MainController {
     private final ConnectionManager connectionManager = new ConnectionManager();
     private TabManager tabManager;
     private Timeline memoryMonitor;
-    private double lastDivider = DEFAULT_DIVIDER;
     private boolean sidebarVisible = true;
 
     // Lock overlay state
@@ -78,19 +77,16 @@ public class MainController {
     @FXML
     public void initialize() {
         tabManager = new TabManager(tabPane, connectionManager, this);
+        if (sessionList != null) {
+            SplitPane.setResizableWithParent(sessionList, false);
+        }
         if (sessionListController != null) {
             sessionListController.setMainController(this);
             sessionListController.refresh();
         }
         statusLabel.setText(I18nManager.t("main.status_ready", "count", String.valueOf(tabManager.getActiveTabCount())));
 
-        // Set toolbar button texts with i18n
-        newConnectionButton.setText(I18nManager.t("main.new_connection"));
-        credentialsButton.setText(I18nManager.t("main.manage_credentials"));
-        sftpButton.setText(I18nManager.t("main.sftp"));
-        settingsButton.setText(I18nManager.t("main.settings"));
-        disconnectAllButton.setText(I18nManager.t("main.disconnect_all"));
-        lockButton.setText(I18nManager.t("main.lock"));
+        initToolbarLabels();
 
         // Restore prior sidebar state (default visible).
         boolean shouldShow = ConfigManager.getInstance().getBoolean(KEY_SIDEBAR_VISIBLE, true);
@@ -105,6 +101,15 @@ public class MainController {
         // Register global accelerators once the scene is attached. Doing it here
         // (rather than in FXML) keeps the shortcuts near the handlers they trigger.
         Platform.runLater(this::installAccelerators);
+    }
+
+    private void initToolbarLabels() {
+        newConnectionButton.setText(I18nManager.t("main.new_connection"));
+        credentialsButton.setText(I18nManager.t("main.manage_credentials"));
+        sftpButton.setText(I18nManager.t("main.sftp"));
+        settingsButton.setText(I18nManager.t("main.settings"));
+        disconnectAllButton.setText(I18nManager.t("main.disconnect_all"));
+        lockButton.setText(I18nManager.t("main.lock"));
     }
 
     private void installAccelerators() {
@@ -284,9 +289,6 @@ public class MainController {
 
     private void hideSidebar() {
         if (!sidebarVisible || mainSplit == null || sessionList == null) return;
-        if (!mainSplit.getDividers().isEmpty()) {
-            lastDivider = mainSplit.getDividers().get(0).getPosition();
-        }
         sidebarVisible = false;
         updateToggleButtonGraphic(false);
         ConfigManager.getInstance().set(KEY_SIDEBAR_VISIBLE, "false");
@@ -314,13 +316,6 @@ public class MainController {
             } else {
                 mainSplit.getItems().setAll(sessionList, tabParent);
             }
-            // Divider restoration must land on yet another pulse — after the items
-            // update has been laid out — otherwise the same CCE fires here.
-            Platform.runLater(() -> {
-                if (!mainSplit.getDividers().isEmpty()) {
-                    mainSplit.setDividerPositions(lastDivider);
-                }
-            });
         });
     }
 
@@ -423,7 +418,7 @@ public class MainController {
             Parent root = loader.load();
             SettingsViewController controller = loader.getController();
             controller.setMainController(this);
-            Scene scene = new Scene(root, 480, 360);
+            Scene scene = new Scene(root, 520, 560);
             ThemeManager.apply(scene);
             Stage stage = new Stage();
             stage.setTitle(I18nManager.t("settings.title"));
@@ -499,8 +494,23 @@ public class MainController {
         updateStatus("Theme: " + themeKey);
     }
 
-    public void refreshSessionList() {
-        if (sessionListController != null) {
+    /**
+     * Push the saved font settings live: the terminal font onto every open tab, and
+     * the UI font onto every open window's Scene root. Called from
+     * SettingsViewController after the new values are already in ConfigManager.
+     */
+    public void applyFontSettings(String terminalFamily, int terminalSize) {
+        if (tabManager != null) {
+            tabManager.applyTerminalFont(terminalFamily, terminalSize);
+        }
+        for (Window w : Window.getWindows()) {
+            if (w instanceof Stage s) {
+                ThemeManager.applyUiFont(s.getScene());
+            }
+        }
+    }
+
+    public void refreshSessionList() {        if (sessionListController != null) {
             sessionListController.refresh();
         }
     }

@@ -22,6 +22,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
@@ -42,6 +44,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * clicking Reconnect rebuilds the session and re-attaches the widget.
  */
 public class TabManager {
+    public static final int MIN_FONT_SIZE = 8;
+    public static final int MAX_FONT_SIZE = 32;
+    public static final int DEFAULT_FONT_SIZE = 14;
+
     private final TabPane tabPane;
     private final ConnectionManager connectionManager;
     private final MainController mainController;
@@ -65,26 +71,17 @@ public class TabManager {
      */
     private void openTabJediTermFx(ConnectionProfile profile, ConfigManager cfg, Tab existingTab) {
         TerminalTheme theme = resolveTheme(cfg.get(ConfigManager.KEY_TERMINAL_THEME, "dark"));
-        double fontSize = cfg.getInt(ConfigManager.KEY_FONT_SIZE, 14);
-        // Per-profile encoding wins over the global default; empty string means "not set".
-        String profileEncoding = profile.getEncoding();
-        String encodingName = (profileEncoding != null && !profileEncoding.isBlank())
-            ? profileEncoding
-            : cfg.get(ConfigManager.KEY_DEFAULT_ENCODING, "UTF-8");
-        Charset charset;
-        try {
-            charset = Charset.forName(encodingName);
-        } catch (Exception e) {
-            charset = Charset.forName("UTF-8");
-        }
-        final Charset effectiveCharset = charset;
+        double fontSize = cfg.getInt(ConfigManager.KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
+        String fontFamily = cfg.get(ConfigManager.KEY_TERMINAL_FONT_FAMILY, "");
+        final Charset effectiveCharset = resolveCharset(profile, cfg);
 
-        RaindropSettingsProvider settings = new RaindropSettingsProvider(theme, fontSize);
+        RaindropSettingsProvider settings = new RaindropSettingsProvider(theme, fontSize, fontFamily);
         JediTermFxWidget widget = new RaindropJediTermFxWidget(120, 40, settings);
         // Paint the widget's outer StackPane with the theme background so the
         // brief moment before the Canvas has finished its first repaint doesn't
         // flash white on a dark theme. Also covers any padding around the canvas.
         applyBackgroundStyle(widget.getPane(), theme.getBackground());
+        installZoomHandlers(widget.getPane());
 
         Label placeholder = new Label("Connecting to " + profile.getHost() + "...");
         placeholder.setMaxWidth(Double.MAX_VALUE);
@@ -191,6 +188,19 @@ public class TabManager {
         return box;
     }
 
+    /** Per-profile encoding wins over the global default; blank means "not set". */
+    private static Charset resolveCharset(ConnectionProfile profile, ConfigManager cfg) {
+        String profileEncoding = profile.getEncoding();
+        String name = (profileEncoding != null && !profileEncoding.isBlank())
+            ? profileEncoding
+            : cfg.get(ConfigManager.KEY_DEFAULT_ENCODING, "UTF-8");
+        try {
+            return Charset.forName(name);
+        } catch (Exception e) {
+            return Charset.forName("UTF-8");
+        }
+    }
+
     private TerminalTheme resolveTheme(String name) {
         return switch (name == null ? "dark" : name.toLowerCase()) {
             case "light" -> TerminalTheme.LIGHT;
@@ -268,10 +278,11 @@ public class TabManager {
                 JediTermFxWidget widget = widgets.get(tab);
                 if (widget != null) {
                     applyBackgroundStyle(widget.getPane(), theme.getBackground());
-                    refreshDefaultStyle(widget, settings);
-                    if (widget instanceof RaindropJediTermFxWidget rw
-                            && rw.getTerminalPanel() != null) {
-                        rw.getTerminalPanel().repaint();
+                    if (widget instanceof RaindropJediTermFxWidget rw) {
+                        rw.refreshDefaultStyle(settings);
+                        if (rw.getTerminalPanel() != null) {
+                            rw.getTerminalPanel().repaint();
+                        }
                     }
                 }
             }
@@ -279,28 +290,44 @@ public class TabManager {
     }
 
     /**
-     * The StyleState living on the TerminalTextBuffer snapshots the settings
-     * provider's default TextStyle at widget-construction time; there's no
-     * public setter to refresh it. Reflect into TerminalPanel#myStyleState and
-     * call {@code setDefaultStyle(...)} so a live theme switch also updates the
-     * background of already-painted "styleless" cells (banner/MOTD text).
+     * Live-swap the terminal font family + size on every open tab, so a settings
+     * save doesn't require reopening tabs. The cell grid must be re-measured after
+     * the font changes, otherwise the canvas keeps the old character advance.
      */
-    private static void refreshDefaultStyle(JediTermFxWidget widget, RaindropSettingsProvider settings) {
-        var panel = widget.getTerminalPanel();
-        if (panel == null) return;
-        try {
-            var field = com.techsenger.jeditermfx.ui.TerminalPanel.class.getDeclaredField("myStyleState");
-            field.setAccessible(true);
-            Object styleState = field.get(panel);
-            if (styleState != null) {
-                var setter = styleState.getClass().getMethod("setDefaultStyle",
-                    com.techsenger.jeditermfx.core.TextStyle.class);
-                setter.invoke(styleState, settings.getDefaultStyle());
+    public void applyTerminalFont(String family, double size) {
+        Platform.runLater(() -> {
+            for (Map.Entry<Tab, RaindropSettingsProvider> entry : tabSettings.entrySet()) {
+                RaindropSettingsProvider settings = entry.getValue();
+                settings.setFontFamily(family);
+                settings.setFontSize(size);
+                JediTermFxWidget widget = widgets.get(entry.getKey());
+                if (widget instanceof RaindropJediTermFxWidget rw) {
+                    rw.refreshFont();
+                }
             }
-        } catch (ReflectiveOperationException ignored) {
-            // Best-effort: without this the next paint still picks up the new
-            // window bg via getWindowBackground(), only banner cells retain old bg.
-        }
+        });
+    }
+
+    /**
+     * Nudge the terminal font size by {@code delta} steps, clamped to the same
+     * range the settings dialog allows. Persists the result so the zoom survives
+     * a restart and stays in sync with the settings dialog.
+     */
+    public void adjustFontSize(int delta) {
+        ConfigManager cfg = ConfigManager.getInstance();
+        int current = cfg.getInt(ConfigManager.KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
+        int next = Math.clamp(current + delta, MIN_FONT_SIZE, MAX_FONT_SIZE);
+        if (next == current) return;
+        cfg.set(ConfigManager.KEY_FONT_SIZE, String.valueOf(next));
+        applyTerminalFont(cfg.get(ConfigManager.KEY_TERMINAL_FONT_FAMILY, ""), next);
+        mainController.updateStatus("Font size: " + next);
+    }
+
+    public void resetFontSize() {
+        ConfigManager cfg = ConfigManager.getInstance();
+        cfg.set(ConfigManager.KEY_FONT_SIZE, String.valueOf(DEFAULT_FONT_SIZE));
+        applyTerminalFont(cfg.get(ConfigManager.KEY_TERMINAL_FONT_FAMILY, ""), DEFAULT_FONT_SIZE);
+        mainController.updateStatus("Font size: " + DEFAULT_FONT_SIZE);
     }
 
     private void setupTabContextMenu(Tab tab) {
@@ -349,6 +376,29 @@ public class TabManager {
     private static void applyBackgroundStyle(Pane pane, String hex) {
         if (pane == null) return;
         pane.setStyle("-fx-background-color: " + hex + ";");
+    }
+
+    /**
+     * Ctrl+wheel and Ctrl+plus/minus/0 zoom. Registered as event filters on the
+     * widget's pane so they run before jeditermfx's own handlers forward the key
+     * to the remote shell; consuming the event keeps the shortcut local.
+     */
+    private void installZoomHandlers(Pane pane) {
+        if (pane == null) return;
+        pane.addEventFilter(ScrollEvent.SCROLL, e -> {
+            if (!e.isControlDown() || e.getDeltaY() == 0) return;
+            adjustFontSize(e.getDeltaY() > 0 ? 1 : -1);
+            e.consume();
+        });
+        pane.addEventFilter(KeyEvent.KEY_PRESSED, e -> {
+            if (!e.isControlDown() || e.isAltDown() || e.isMetaDown()) return;
+            switch (e.getCode()) {
+                case EQUALS, PLUS, ADD -> { adjustFontSize(1); e.consume(); }
+                case MINUS, SUBTRACT -> { adjustFontSize(-1); e.consume(); }
+                case DIGIT0, NUMPAD0 -> { resetFontSize(); e.consume(); }
+                default -> { }
+            }
+        });
     }
 
     /**

@@ -95,4 +95,25 @@ class I18nManagerTest {
             }
         }
     }
+
+    @Test
+    void testFontSettingKeysResolveInAllLanguages() {
+        String[] keys = {
+            "settings.font_family",
+            "settings.font_size",
+            "settings.font_preview",
+            "settings.font_preview_text",
+            "settings.font_default",
+            "settings.ui_font_family",
+            "settings.ui_font_size"
+        };
+        for (String code : new String[] {
+                I18nManager.LANG_EN_US, I18nManager.LANG_ZH_CN, I18nManager.LANG_ZH_TW}) {
+            I18nManager.getInstance().setLanguage(code);
+            for (String k : keys) {
+                assertNotEquals(k, I18nManager.t(k),
+                    "Missing translation for " + k + " in " + code);
+            }
+        }
+    }
 }

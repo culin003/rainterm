@@ -135,6 +135,16 @@ public class RaindropTerminalPanel extends TerminalPanel {
     }
 
     /**
+     * Re-read the font from the settings provider and re-measure the character cell
+     * grid. {@code reinitFontAndResize()} is protected in TerminalPanel, so a live
+     * font change has to go through a subclass to reach it. Without the re-measure
+     * the canvas keeps the old cell size and glyphs overlap or leave gaps.
+     */
+    public void refreshFont() {
+        reinitFontAndResize();
+    }
+
+    /**
      * Force early creation of the popup native peer so the first user right-click
      * doesn't pay the cold-start cost. Must run on the FX thread after this panel
      * is attached to a Scene.

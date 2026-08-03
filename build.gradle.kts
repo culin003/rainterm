@@ -5,6 +5,10 @@ plugins {
     id("org.beryx.runtime") version "1.13.1"
 }
 
+import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
+import java.util.zip.ZipOutputStream
+
 group = "com.raindrop"
 version = "1.1.0"
 
@@ -48,8 +52,8 @@ dependencies {
     implementation("org.jasypt:jasypt:1.9.3")
 
     // Icons — Ikonli (JavaFX bindings + FontAwesome5 pack). Font-based, cross-platform.
-    implementation("org.kordamp.ikonli:ikonli-javafx:12.3.1")
-    implementation("org.kordamp.ikonli:ikonli-fontawesome5-pack:12.3.1")
+    implementation("org.kordamp.ikonli:ikonli-javafx:12.4.0")
+    implementation("org.kordamp.ikonli:ikonli-fontawesome5-pack:12.4.0")
 
     // JSON parsing for i18n
     implementation("com.fasterxml.jackson.core:jackson-databind:2.18.2")
@@ -124,12 +128,79 @@ tasks.jar {
     }
 }
 
+// sqlite-jdbc ships prebuilt JNI libraries for 24 platform/arch combinations
+// (Windows, Mac, FreeBSD, Android, musl, ppc64, riscv64, ...). They account for
+// 98% of that jar's 24.6MB, and OSInfo only ever loads the one matching the host.
+// Repack it with just the target platform's library for the distributable.
+//
+// Guarded by a property so `./gradlew test` / `run` keep the untouched upstream
+// jar: stripping is only correct when the artifact targets a known platform.
+val sqliteNativePrefix = "org/sqlite/native/Linux/x86_64/"
+
+val slimSqliteJar by tasks.registering {
+    description = "Repacks sqlite-jdbc keeping only the $sqliteNativePrefix JNI library."
+    group = "distribution"
+    val outFile = layout.buildDirectory.file("slim-libs/sqlite-jdbc-slim.jar")
+    outputs.file(outFile)
+    doLast {
+        val original = configurations.runtimeClasspath.get()
+            .single { it.name.startsWith("sqlite-jdbc-") }
+        val target = outFile.get().asFile
+        target.parentFile.mkdirs()
+        var kept = 0
+        var dropped = 0
+        ZipFile(original).use { zip ->
+            ZipOutputStream(target.outputStream().buffered()).use { out ->
+                for (entry in zip.entries()) {
+                    val isNative = entry.name.startsWith("org/sqlite/native/")
+                    if (isNative && !entry.name.startsWith(sqliteNativePrefix)) {
+                        dropped++
+                        continue
+                    }
+                    if (isNative) kept++
+                    out.putNextEntry(ZipEntry(entry.name))
+                    zip.getInputStream(entry).use { input -> input.copyTo(out) }
+                    out.closeEntry()
+                }
+            }
+        }
+        // A wrong prefix would silently produce a jar with no JNI library at all,
+        // failing only at runtime on the user's machine.
+        require(kept > 0) { "No native library matched $sqliteNativePrefix — check the path" }
+        logger.lifecycle(
+            "slimSqliteJar: kept $kept, dropped $dropped natives; " +
+                "${original.length() / 1048576}MB -> ${target.length() / 1048576}MB"
+        )
+    }
+}
+
 runtime {
-    options.set(listOf("--strip-debug", "--compress", "2", "--no-header-files", "--no-man-pages"))
+    // --compress zip-9: maximum resource compression. The legacy values 0/1/2 are
+    // deprecated and slated for removal; zip-2/zip-6 are equivalent but spelt the
+    // new way. The whole jlink help is terse — measured ~2% on a deb artifact.
+    options.set(listOf(
+        "--strip-debug",
+        "--compress", "zip-9",
+        "--no-header-files",
+        "--no-man-pages"
+    ))
+    // Derived from `java -verbose:module` against the real app: every entry below
+    // was observed loading at startup. `java.prefs` is pulled in by jdk internals
+    // (file chooser cache etc.) and is not visible to jdeps static analysis, so
+    // it must come from runtime evidence rather than tool suggestions.
     modules.set(listOf(
-        "java.base", "java.desktop", "java.logging", "java.management",
-        "java.naming", "java.net.http", "java.prefs", "java.scripting",
-        "java.security.jgss", "java.sql", "java.xml", "jdk.crypto.ec",
+        "java.base",
+        "java.desktop",
+        "java.logging",
+        "java.management",
+        "java.naming",
+        "java.net.http",
+        "java.prefs",
+        "java.scripting",
+        "java.security.jgss",
+        "java.sql",
+        "java.xml",
+        "jdk.crypto.ec",
         "jdk.unsupported"
     ))
     jpackage {
@@ -145,5 +216,29 @@ runtime {
         jvmArgs = listOf(
             "--add-opens=javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED"
         )
+    }
+}
+
+// jpackage copies the whole runtimeClasspath into the app image, so the fat
+// sqlite-jdbc lands there. Swap in the slim jar afterwards — doing it here
+// rather than by rewriting the classpath keeps `test` and `run` on the
+// unmodified upstream artifact.
+tasks.named("jpackageImage") {
+    dependsOn(slimSqliteJar)
+    doLast {
+        val appLibDir = layout.buildDirectory
+            .dir("jpackage/${project.name.replaceFirstChar { it.uppercase() }}/lib/app")
+            .get().asFile
+        val fat = appLibDir.listFiles { f: File -> f.name.startsWith("sqlite-jdbc-") }
+            ?: error("Cannot read $appLibDir")
+        require(fat.isNotEmpty()) { "No sqlite-jdbc jar found in $appLibDir" }
+        fat.forEach { jar ->
+            val before = jar.length()
+            slimSqliteJar.get().outputs.files.singleFile.copyTo(jar, overwrite = true)
+            logger.lifecycle(
+                "jpackageImage: slimmed ${jar.name} " +
+                    "${before / 1048576}MB -> ${jar.length() / 1048576}MB"
+            )
+        }
     }
 }

@@ -1,8 +1,11 @@
 package com.raindrop.util;
 
 import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -21,7 +24,10 @@ public final class FontManager {
 
     private static final String MONO_CJK_RESOURCE = "/fonts/SarasaMonoSC-Regular.ttf";
 
+    private static final double MEASURE_SIZE = 14;
+
     private static volatile boolean loaded = false;
+    private static volatile List<String> monospaceCache = null;
 
     private FontManager() {}
 
@@ -58,5 +64,57 @@ public final class FontManager {
 
     public static Optional<Font> monoCjkFont(double size) {
         return loaded ? Optional.of(Font.font(MONO_CJK_FAMILY, size)) : Optional.empty();
+    }
+
+    /**
+     * Resolve a configured terminal font family to one JavaFX can actually render.
+     * Falls back to the bundled CJK family when the stored name is blank or no
+     * longer installed (e.g. the config was copied from another machine).
+     */
+    public static String resolveTerminalFamily(String configured) {
+        if (configured == null || configured.isBlank()) {
+            return monoCjkFamily();
+        }
+        return Font.getFamilies().contains(configured) ? configured : monoCjkFamily();
+    }
+
+    /**
+     * Monospace families installed on this machine, bundled family first. Filtered by
+     * measuring a narrow vs. wide glyph: proportional fonts render them at different
+     * widths, so unequal advance means "not monospace". Families JavaFX can't resolve
+     * fall back to a proportional default and are filtered out the same way.
+     *
+     * <p>Must be called on the JavaFX Application Thread ({@link Text} instantiation).
+     * The result is cached because measuring every installed family costs ~100ms.
+     */
+    public static synchronized List<String> monospaceFamilies() {
+        if (monospaceCache != null) {
+            return monospaceCache;
+        }
+        List<String> mono = new ArrayList<>();
+        if (loaded) {
+            mono.add(MONO_CJK_FAMILY);
+        }
+        for (String family : Font.getFamilies()) {
+            if (!family.equals(MONO_CJK_FAMILY) && isMonospace(family)) {
+                mono.add(family);
+            }
+        }
+        monospaceCache = List.copyOf(mono);
+        return monospaceCache;
+    }
+
+    private static boolean isMonospace(String family) {
+        Font font = Font.font(family, MEASURE_SIZE);
+        if (font == null || !font.getFamily().equals(family)) {
+            return false;
+        }
+        return Math.abs(advance(font, "i") - advance(font, "W")) < 0.01;
+    }
+
+    private static double advance(Font font, String s) {
+        Text text = new Text(s);
+        text.setFont(font);
+        return text.getLayoutBounds().getWidth();
     }
 }
