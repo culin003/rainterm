@@ -258,13 +258,13 @@ public class SftpBrowserController {
                 FileChooser fc = new FileChooser();
                 fc.setTitle(I18nManager.t("sftp.upload_select"));
                 fc.setInitialDirectory(currentLocalDir);
-                List<File> files = fc.showOpenMultipleDialog(localFileList.getScene().getWindow());
+                List<File> files = fc.showOpenMultipleDialog(null);
                 if (files != null && !files.isEmpty()) startUpload(files);
             } else if (bt == btnFolder) {
                 DirectoryChooser dc = new DirectoryChooser();
                 dc.setTitle(I18nManager.t("sftp.select_folder"));
                 dc.setInitialDirectory(currentLocalDir);
-                File folder = dc.showDialog(localFileList.getScene().getWindow());
+                File folder = dc.showDialog(null);
                 if (folder != null) startUpload(Collections.singletonList(folder));
             }
         });
@@ -318,7 +318,7 @@ public class SftpBrowserController {
         DirectoryChooser dc = new DirectoryChooser();
         dc.setInitialDirectory(currentLocalDir);
         dc.setTitle(I18nManager.t("sftp.select_target_dir"));
-        File target = dc.showDialog(remoteFileList.getScene().getWindow());
+        File target = dc.showDialog(null);
         if (target == null) return;
 
         progressBar.setProgress(-1);

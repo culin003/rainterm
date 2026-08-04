@@ -90,7 +90,14 @@ public class SshSession {
             // COLORTERM=truecolor is the modern signal for 24-bit color support.
             // Remote vim checks this (and $TERM=*256color) before enabling
             // termguicolors; without it you get the 16-color fallback.
-            session.setEnvVar("COLORTERM", "truecolor");
+            try {
+                session.setEnvVar("COLORTERM", "truecolor");
+            } catch (IOException e) {
+                // Best-effort: servers without AcceptEnv reject the env request,
+                // which SSHJ reports as a fatal error. COLORTERM is only a color
+                // hint, so log and keep the session.
+                System.err.println("[SshSession] Server rejected env COLORTERM: " + e.getMessage());
+            }
             shell = session.startShell();
             connected = true;
         } catch (IOException e) {
@@ -279,4 +286,3 @@ public class SshSession {
         return shell;
     }
 }
-

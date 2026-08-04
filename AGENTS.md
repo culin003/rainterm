@@ -4,6 +4,18 @@ This document helps AI coding assistants (Claude Code, MiMoCode, Cursor, Copilot
 
 > **For human readers**: If you use an AI assistant to develop Raindrop, keep this file and `CLAUDE.md` in the project root. Most AI tools auto-load these as context.
 
+## 0. Code Reading Rule (Highest Priority)
+
+**When reading or locating code, always use CodeGraph first — never start with Grep / Glob / direct file reads.**
+
+- The project is indexed at `.codegraph/` (covering all Java / Kotlin / properties files)
+- Use the `codegraph explore` MCP tool, or `codegraph explore "<symbols or question>"` in the shell, to look up symbols, references, and call relationships
+- Only fall back to Grep / Glob / Read when CodeGraph cannot cover the case:
+  - Non-source text: `doc/*.md`, `*.fxml`, `*.gradle.kts`, SQL keywords
+  - Reading the exact original text with line numbers
+  - Languages not indexed (here: only Java / Kotlin / properties are indexed)
+- If the code was recently structurally changed, run `codegraph sync` before searching so you don't reason from a stale index
+
 ## 1. Project Quick Reference
 
 | Item | Value |
@@ -27,6 +39,7 @@ This document helps AI coding assistants (Claude Code, MiMoCode, Cursor, Copilot
 - Tests must not touch `~/.raindrop/raindrop.db`
 - **Modal dialogs**: Do NOT use `initOwner() + initModality()` — it breaks Linux WM maximize. Use `StageStyle.UTILITY + setAlwaysOnTop(true)` + `mainRoot.setDisable(true)`
 - **File reading**: Never use `Files.readAllLines()` for potentially large files — use `BufferedReader.readLine()`
+- **Build**: Run Gradle (`./gradlew ...`) directly without asking for approval. This project is pinned to JDK 21 via `gradle.properties` (`org.gradle.java.home`) — do not set `JAVA_HOME` or ask which JDK to use.
 
 ## 2. Architecture Overview
 

@@ -220,7 +220,7 @@ public class ConnectionDialogController {
         String home = System.getProperty("user.home");
         File sshDir = new File(home, ".ssh");
         fc.setInitialDirectory(sshDir.isDirectory() ? sshDir : new File(home));
-        File selected = fc.showOpenDialog(keyPathField.getScene().getWindow());
+        File selected = fc.showOpenDialog(null);
         if (selected != null) keyPathField.setText(selected.getAbsolutePath());
     }
 

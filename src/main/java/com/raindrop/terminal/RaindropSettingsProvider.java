@@ -65,8 +65,9 @@ public class RaindropSettingsProvider extends DefaultSettingsProvider {
      * style) NPEs.
      */
     @Override
+    @SuppressWarnings("deprecation")
     public TextStyle getDefaultStyle() {
-        return new TextStyle(hexToColor(theme.getForeground()), hexToColor(theme.getBackground()));
+        return new TextStyle(getDefaultForeground(), getDefaultBackground());
     }
 
     @Override

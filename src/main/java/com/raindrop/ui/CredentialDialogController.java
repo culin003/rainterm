@@ -233,7 +233,7 @@ public class CredentialDialogController {
             new FileChooser.ExtensionFilter("All Files", "*.*")
         );
 
-        File file = fileChooser.showOpenDialog(keyPathField.getScene().getWindow());
+        File file = fileChooser.showOpenDialog(null);
         if (file != null) {
             keyPathField.setText(file.getAbsolutePath());
         }
