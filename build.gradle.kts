@@ -10,7 +10,7 @@ import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
 group = "com.raindrop"
-version = "1.2.1"
+version = "1.2.2"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
@@ -135,14 +135,36 @@ tasks.jar {
 //
 // Guarded by a property so `./gradlew test` / `run` keep the untouched upstream
 // jar: stripping is only correct when the artifact targets a known platform.
-val sqliteNativePrefix = "org/sqlite/native/Linux/x86_64/"
+//
+// Each CI runner builds natively for its own OS/arch (see release.yml matrix), so
+// the target is inferred from the running JVM rather than hardcoded. The require()
+// below guards against an unknown combination silently shipping a jar with no JNI.
+fun sqliteNativeSubpath(): String {
+    val os = System.getProperty("os.name").lowercase()
+    val arch = System.getProperty("os.arch").lowercase()
+    val platform = when {
+        os.contains("win") -> "Windows"
+        os.contains("mac") || os.contains("darwin") -> "Mac"
+        os.contains("linux") -> "Linux"
+        else -> error("Unsupported OS for sqlite-jdbc slim jar: $os")
+    }
+    val machine = when (arch) {
+        "amd64", "x86_64" -> "x86_64"
+        "aarch64", "arm64" -> "aarch64"
+        "arm" -> "arm"
+        "x86", "i386", "i486", "i586", "i686" -> "x86"
+        else -> error("Unsupported arch for sqlite-jdbc slim jar: $arch")
+    }
+    return "org/sqlite/native/$platform/$machine/"
+}
 
 val slimSqliteJar by tasks.registering {
-    description = "Repacks sqlite-jdbc keeping only the $sqliteNativePrefix JNI library."
+    description = "Repacks sqlite-jdbc keeping only the target platform JNI library."
     group = "distribution"
     val outFile = layout.buildDirectory.file("slim-libs/sqlite-jdbc-slim.jar")
     outputs.file(outFile)
     doLast {
+        val prefix = sqliteNativeSubpath()
         val original = configurations.runtimeClasspath.get()
             .single { it.name.startsWith("sqlite-jdbc-") }
         val target = outFile.get().asFile
@@ -153,7 +175,7 @@ val slimSqliteJar by tasks.registering {
             ZipOutputStream(target.outputStream().buffered()).use { out ->
                 for (entry in zip.entries()) {
                     val isNative = entry.name.startsWith("org/sqlite/native/")
-                    if (isNative && !entry.name.startsWith(sqliteNativePrefix)) {
+                    if (isNative && !entry.name.startsWith(prefix)) {
                         dropped++
                         continue
                     }
@@ -166,7 +188,7 @@ val slimSqliteJar by tasks.registering {
         }
         // A wrong prefix would silently produce a jar with no JNI library at all,
         // failing only at runtime on the user's machine.
-        require(kept > 0) { "No native library matched $sqliteNativePrefix — check the path" }
+        require(kept > 0) { "No native library matched $prefix — check the path" }
         logger.lifecycle(
             "slimSqliteJar: kept $kept, dropped $dropped natives; " +
                 "${original.length() / 1048576}MB -> ${target.length() / 1048576}MB"

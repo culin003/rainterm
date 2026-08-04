@@ -43,8 +43,27 @@ jobs:
         run: chmod +x gradlew
 
       # Tests require a real SSH server; run locally with ./gradlew test
-      - name: Build installer
-        run: ./gradlew jpackage
+      #
+      # Windows runners use PowerShell by default, which cannot execute the bash
+      # ./gradlew script — use gradlew.bat there.
+      - name: Build installer (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          if [[ "$RUNNER_OS" == "macOS" ]]; then
+            # jpackage DMG creation (hdiutil) is flaky on macOS runners; retry.
+            for attempt in 1 2 3; do
+              ./gradlew jpackage --console=plain && exit 0
+              echo "jpackage attempt $attempt failed; retrying in 5s..."
+              sleep 5
+            done
+            exit 1
+          fi
+          ./gradlew jpackage --console=plain
+
+      - name: Build installer (Windows)
+        if: runner.os == 'Windows'
+        run: .\gradlew.bat jpackage --console=plain
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

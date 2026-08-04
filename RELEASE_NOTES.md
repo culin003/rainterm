@@ -1,10 +1,26 @@
-# Release Notes — Raindrop v1.2.1
+# Release Notes — Raindrop v1.2.2
 
 Raindrop 是一款基于 JavaFX 的跨平台 SSH/SFTP 桌面管理工具，对标 XShell / MobaXterm。
 
 ---
 
-## 本次更新 (v1.2.1)
+## 本次更新 (v1.2.2)
+
+### 🔧 修复：Windows 与 macOS 安装包发布
+
+**问题**：v1.2.1 的 GitHub Actions 发布流程中，Windows（MSI）和 macOS（DMG）两个构建 job 失败，导致 Release 页面只发布了 Linux（amd64 / arm64）的 `.deb` 包，`msi` 与 `dmg` 缺失。
+
+**修复**：
+
+- **Windows**：GitHub Actions 的 Windows runner 默认使用 PowerShell，无法直接执行 bash 脚本 `./gradlew`，构建改为调用 `.\gradlew.bat`。
+- **macOS**：jpackage 生成 DMG 依赖 `hdiutil`，在 macOS runner 上偶发失败，构建步骤增加自动重试。
+- **sqlite-jdbc 原生库**：`slimSqliteJar` 此前硬编码只保留 `Linux/x86_64` 的 JNI 库，现在按运行环境的 OS / 架构动态选择，确保 Windows 的 `sqlitejdbc.dll`、macOS 的 `libsqlitejdbc.dylib`、Linux arm64 的 `libsqlitejdbc.so` 都正确打入对应安装包。
+
+---
+
+## 历史版本
+
+### v1.2.1
 
 ### 🐛 修复：COLORTERM 环境变量在严格服务器上报错断连
 
@@ -25,8 +41,6 @@ Raindrop 是一款基于 JavaFX 的跨平台 SSH/SFTP 桌面管理工具，对�
 - `AGENTS.md` 新增「Code Reading Rule」章节：优先使用 CodeGraph 定位代码，并明确 Gradle 构建约定（JDK 21 由 `gradle.properties` 固定，无需设置 `JAVA_HOME`）
 
 ---
-
-## 历史版本
 
 ### v1.2.0
 
