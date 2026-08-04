@@ -1,10 +1,22 @@
-# Release Notes — Raindrop v1.2.2
+# Release Notes — Raindrop v1.2.3
 
 Raindrop 是一款基于 JavaFX 的跨平台 SSH/SFTP 桌面管理工具，对标 XShell / MobaXterm。
 
 ---
 
-## 本次更新 (v1.2.2)
+## 本次更新 (v1.2.3)
+
+### 🔧 修复：Windows 与 macOS 安装包发布（根治）
+
+**问题**：v1.2.2 修复后，Windows（MSI）和 macOS（DMG）两个 job 仍在 `jpackageImage` 阶段失败。根因是 beryx 插件把应用依赖放进 jpackage 的 app-image 时，目录布局随平台不同——Linux 在 `<image>/lib/app/`，而 Windows / macOS 在 `<image>/app/`。此前代码在镜像生成后按硬编码的 `lib/app` 路径替换瘦身 jar，在 Win/mac 上找不到该目录直接报错。
+
+**修复**：不再等 jpackage 生成镜像后再去镜像里替换文件，改在 `installDist` 阶段（jpackage 的输入目录 `build/install/raindrop/lib/`，布局与平台无关）就把 `sqlite-jdbc` 换成瘦身 jar。这样无论 jpackage 在哪个平台采用何种镜像布局，拷入的始终是仅含目标平台 JNI 库的瘦身 jar。
+
+---
+
+## 历史版本
+
+### v1.2.2
 
 ### 🔧 修复：Windows 与 macOS 安装包发布
 
@@ -17,8 +29,6 @@ Raindrop 是一款基于 JavaFX 的跨平台 SSH/SFTP 桌面管理工具，对�
 - **sqlite-jdbc 原生库**：`slimSqliteJar` 此前硬编码只保留 `Linux/x86_64` 的 JNI 库，现在按运行环境的 OS / 架构动态选择，确保 Windows 的 `sqlitejdbc.dll`、macOS 的 `libsqlitejdbc.dylib`、Linux arm64 的 `libsqlitejdbc.so` 都正确打入对应安装包。
 
 ---
-
-## 历史版本
 
 ### v1.2.1
 

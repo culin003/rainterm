@@ -10,7 +10,7 @@ import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
 group = "com.raindrop"
-version = "1.2.2"
+version = "1.2.3"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21
@@ -241,26 +241,32 @@ runtime {
     }
 }
 
-// jpackage copies the whole runtimeClasspath into the app image, so the fat
-// sqlite-jdbc lands there. Swap in the slim jar afterwards — doing it here
-// rather than by rewriting the classpath keeps `test` and `run` on the
-// unmodified upstream artifact.
-tasks.named("jpackageImage") {
-    dependsOn(slimSqliteJar)
-    doLast {
-        val appLibDir = layout.buildDirectory
-            .dir("jpackage/${project.name.replaceFirstChar { it.uppercase() }}/lib/app")
-            .get().asFile
-        val fat = appLibDir.listFiles { f: File -> f.name.startsWith("sqlite-jdbc-") }
-            ?: error("Cannot read $appLibDir")
-        require(fat.isNotEmpty()) { "No sqlite-jdbc jar found in $appLibDir" }
-        fat.forEach { jar ->
-            val before = jar.length()
-            slimSqliteJar.get().outputs.files.singleFile.copyTo(jar, overwrite = true)
-            logger.lifecycle(
-                "jpackageImage: slimmed ${jar.name} " +
-                    "${before / 1048576}MB -> ${jar.length() / 1048576}MB"
-            )
+// beryx's jpackageImage feeds the application distribution (installDist) into
+// jpackage, but the resulting app-image layout differs per platform (Linux puts
+// app dependencies under `<image>/lib/app`, Windows/macOS under `<image>/app`).
+// Rather than patching files inside the image at a hardcoded path, swap the slim
+// sqlite-jdbc in *before* jpackage copies it — in the installDist staging dir,
+// which is layout-independent — so every platform's image inherits the slim jar
+// regardless of its layout. `test` and `run` never touch installDist, so they
+// keep the untouched upstream artifact.
+afterEvaluate {
+    tasks.named("installDist") {
+        dependsOn(slimSqliteJar)
+        doLast {
+            val distLibDir = layout.buildDirectory
+                .dir("install/${project.name}/lib")
+                .get().asFile
+            val fat = distLibDir.listFiles { f: File -> f.name.startsWith("sqlite-jdbc-") }
+                ?: error("Cannot read $distLibDir")
+            require(fat.isNotEmpty()) { "No sqlite-jdbc jar found in $distLibDir" }
+            fat.forEach { jar ->
+                val before = jar.length()
+                slimSqliteJar.get().outputs.files.singleFile.copyTo(jar, overwrite = true)
+                logger.lifecycle(
+                    "installDist: slimmed ${jar.name} " +
+                        "${before / 1048576}MB -> ${jar.length() / 1048576}MB"
+                )
+            }
         }
     }
 }
