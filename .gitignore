@@ -35,3 +35,10 @@ Thumbs.db
 .env.*
 !.env.example
 .secrets
+
+# Machine-local Gradle JDK override — holds an absolute java.home path that
+# would break CI runners. The repository's JDK is provided by setup-java there.
+gradle.properties
+
+# AI tooling scratch dir (Serena). Plans under .mimocode/ are committed; this is not.
+.serena/
