@@ -1,4 +1,34 @@
-# Release Notes — Raindrop v1.2.0
+# Release Notes — Raindrop v1.2.1
+
+Raindrop 是一款基于 JavaFX 的跨平台 SSH/SFTP 桌面管理工具，对标 XShell / MobaXterm。
+
+---
+
+## 本次更新 (v1.2.1)
+
+### 🐛 修复：COLORTERM 环境变量在严格服务器上报错断连
+
+**问题**：部分服务器（`AcceptEnv` 受限的 OpenSSH 配置）会拒绝 `COLORTERM=truecolor` 的环境请求，SSHJ 将其视为致命错误，导致终端在连接成功后立即断开。
+
+**修复**：`SshSession.connect()` 改为尝试设置 `COLORTERM`，失败时仅记录日志并继续建立 shell，不再中断连接。`COLORTERM` 只是颜色提示，缺失时远端 vim 会回退到 256 色而非 24-bit 真彩，但会话保持可用。
+
+### 🐛 修复：文件选择对话框 owner 报错
+
+连接对话框、凭证对话框和 SFTP 浏览器的文件/目录选择器改用 `null` owner，修复在 Linux 上弹出时可能出现的 owner-window 相关警告。
+
+### 🔧 构建与代码整理
+
+- `RaindropSettingsProvider` 改用 `getDefaultForeground()/getDefaultBackground()`，消除已废弃的 `TextStyle` 构造器告警
+
+### 文档
+
+- `AGENTS.md` 新增「Code Reading Rule」章节：优先使用 CodeGraph 定位代码，并明确 Gradle 构建约定（JDK 21 由 `gradle.properties` 固定，无需设置 `JAVA_HOME`）
+
+---
+
+## 历史版本
+
+### v1.2.0
 
 Raindrop 是一款基于 JavaFX 的跨平台 SSH/SFTP 桌面管理工具，对标 XShell / MobaXterm。
 
