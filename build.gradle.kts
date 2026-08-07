@@ -128,6 +128,58 @@ tasks.jar {
     }
 }
 
+// JavaFX artifacts are platform-specific (the win/mac jars carry .dll/.dylib natives,
+// the linux ones .so). The javafx plugin resolves only the host platform for the
+// normal runtimeClasspath, so a fat jar built on Linux can't run on Windows. These
+// classifier jars fill in the missing platforms; combining them with the host jars
+// yields a single jar that boots on any desktop OS (JavaFX extracts the matching
+// native at runtime).
+// JavaFX artifacts are platform-specific (win/mac jars carry .dll/.dylib natives,
+// linux ones .so). The javafx plugin resolves only the host platform for the normal
+// runtimeClasspath, so a fat jar built on Linux can't run on Windows. Each platform's
+// jars live in their OWN configuration: the classifier artifacts all declare the same
+// capability as the unclassified module, so mixing platforms in one resolution graph
+// fails. Resolving them separately and merging the resulting files avoids that.
+val javafxWin by configurations.creating { isCanBeResolved = true; isCanBeConsumed = false; isTransitive = false }
+val javafxMac by configurations.creating { isCanBeResolved = true; isCanBeConsumed = false; isTransitive = false }
+val javafxLinux by configurations.creating { isCanBeResolved = true; isCanBeConsumed = false; isTransitive = false }
+
+dependencies {
+    listOf("base", "graphics", "controls", "fxml").forEach { mod ->
+        javafxWin("org.openjfx:javafx-$mod:21:win")
+        javafxMac("org.openjfx:javafx-$mod:21:mac")
+        javafxLinux("org.openjfx:javafx-$mod:21:linux")
+    }
+}
+
+val fatJar by tasks.registering(Jar::class) {
+    description = "Builds a single cross-platform executable jar (all deps incl. JavaFX natives for Windows/macOS/Linux)."
+    group = "distribution"
+    archiveBaseName.set("raindrop")
+    archiveClassifier.set("all")
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    // Signed dependencies (bouncycastle etc.) ship META-INF/*.SF|RSA|DSA|EC whose
+    // digests are invalid once classes are repacked into this jar.
+    exclude("META-INF/*.SF", "META-INF/*.RSA", "META-INF/*.DSA", "META-INF/*.EC")
+    exclude("META-INF/INDEX.LIST")
+    manifest {
+        attributes["Main-Class"] = "com.raindrop.Launcher"
+        // Mirrors the --add-opens jvmArgs used by the jpackage launcher.
+        attributes["Add-Opens"] = "javafx.graphics/com.sun.javafx.tk"
+        // Some deps (jackson, sqlite-jdbc) ship META-INF/versions/ entries.
+        attributes["Multi-Release"] = "true"
+    }
+    from(sourceSets.main.get().output)
+    from({
+        // The javafx plugin's host-platform jars are replaced by the three explicit
+        // platform configurations so every OS has its natives available.
+        (configurations.runtimeClasspath.get().filter { !it.name.startsWith("javafx-") }
+            + javafxWin + javafxMac + javafxLinux)
+            .filter { it.extension == "jar" }
+            .map { zipTree(it) }
+    })
+}
+
 // sqlite-jdbc ships prebuilt JNI libraries for 24 platform/arch combinations
 // (Windows, Mac, FreeBSD, Android, musl, ppc64, riscv64, ...). They account for
 // 98% of that jar's 24.6MB, and OSInfo only ever loads the one matching the host.
@@ -206,17 +258,28 @@ runtime {
         "--no-header-files",
         "--no-man-pages"
     ))
-    // Derived from `java -verbose:module` against the real app: every entry below
-    // was observed loading at startup. `java.prefs` is pulled in by jdk internals
-    // (file chooser cache etc.) and is not visible to jdeps static analysis, so
-    // it must come from runtime evidence rather than tool suggestions.
+    // Module set derived from a scan of the app's bytecode plus jlink's transitive
+    // resolution — see below for which modules are mandated by others.
+    //
+    // Required by app code (verified by grepping the fat jar's constant pools):
+    //   java.logging (JUL used by sshj), java.naming (bouncycastle LDAP),
+    //   java.security.jgss (sshj Kerberos), java.sql (sqlite-jdbc),
+    //   jdk.crypto.ec (EC/ed25519 SSH keys), jdk.unsupported (sun.misc.Unsafe).
+    // Required transitively by the modules above (jlink pulls them automatically,
+    // listed here only for documentation):
+    //   java.prefs + java.datatransfer + java.xml <- java.desktop
+    //   java.scripting + java.xml                 <- javafx.fxml (FXML on module path)
+    //   java.security.sasl                        <- java.security.jgss
+    //   java.transaction.xa                       <- java.sql
+    // java.desktop is mandatory: javafx.graphics requires it.
+    //
+    // java.management and java.net.http were in earlier builds but have ZERO
+    // references in the fat jar; dropping them shaves ~1MB off the image.
     modules.set(listOf(
         "java.base",
         "java.desktop",
         "java.logging",
-        "java.management",
         "java.naming",
-        "java.net.http",
         "java.prefs",
         "java.scripting",
         "java.security.jgss",

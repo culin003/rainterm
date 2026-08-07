@@ -71,8 +71,34 @@ jobs:
           name: raindrop-${{ matrix.arch }}
           path: build/jpackage/${{ matrix.artifact }}
 
+  # The fat jar bundles JavaFX natives for win/mac/linux plus full sqlite-jdbc,
+  # so a single build is identical on any runner — no need to build it per-OS.
+  fatjar:
+    name: Build cross-platform fat jar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build fat jar (all platforms)
+        run: ./gradlew fatJar --console=plain
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: raindrop-fatjar
+          path: build/libs/*-all.jar
+
   release:
-    needs: build
+    needs: [build, fatjar]
     if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     permissions:
@@ -95,5 +121,6 @@ jobs:
             raindrop-arm64/*.deb
             raindrop-x64/*.msi
             raindrop-aarch64/*.dmg
+            raindrop-fatjar/*.jar
           draft: false
           prerelease: false

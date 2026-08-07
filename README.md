@@ -43,6 +43,9 @@ cd raindrop
 
 # Create native installer (optional)
 ./gradlew jpackage
+
+# Create the cross-platform fat jar (single jar with win/mac/linux natives)
+./gradlew fatJar
 ```
 
 ## Project Structure
@@ -114,7 +117,8 @@ src/main/resources/
 | JSON | Jackson 2.16.1 (i18n message loading) |
 | Icons | Ikonli (FontAwesome 5) |
 | Build | Gradle 8.5 (Kotlin DSL) |
-| Installer | jpackage |
+| Installer | jpackage (per-OS: deb / msi / dmg) |
+| Portable jar | `./gradlew fatJar` — single cross-platform jar (win/mac/linux natives), run with `java -jar` |
 
 ## Configuration
 

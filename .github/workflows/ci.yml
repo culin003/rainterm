@@ -40,6 +40,11 @@ jobs:
       - name: Compile all sources
         run: ./gradlew compileJava compileTestJava --console=plain
 
+      # The fat jar resolves the win/mac javafx classifier jars from Maven Central,
+      # so this also validates that the cross-platform packaging stays buildable.
+      - name: Build cross-platform fat jar
+        run: ./gradlew fatJar --console=plain
+
       - name: Upload test report
         if: always()
         uses: actions/upload-artifact@v4
