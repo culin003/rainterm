@@ -10,7 +10,7 @@ import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
 group = "com.raindrop"
-version = "1.2.3"
+version = "1.3.0"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_21

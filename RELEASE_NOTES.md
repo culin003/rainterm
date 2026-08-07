@@ -1,10 +1,38 @@
-# Release Notes — Raindrop v1.2.3
+# Release Notes — Raindrop v1.3.0
 
 Raindrop 是一款基于 JavaFX 的跨平台 SSH/SFTP 桌面管理工具，对标 XShell / MobaXterm。
 
 ---
 
-## 本次更新 (v1.2.3)
+## 本次更新 (v1.3.0)
+
+### ✨ 新特性：选中即复制 / 中键粘贴
+
+- 鼠标选中终端文字后自动复制到选区剪贴板（PRIMARY），点击鼠标中键立即粘贴到当前光标处——与 Linux 终端（xterm / GNOME Terminal）行为一致。
+- 复制与粘贴走 X11 选区剪贴板，与 `Ctrl+C` / `Ctrl+V` 系统剪贴板互不干扰。
+- 可在 **设置 → 选中即复制 / 中键粘贴** 开关中关闭，默认开启。
+
+### 🎨 内置终端字体切换为 Maple Mono CN（默认）
+
+- 内置字体由 Sarasa Mono SC 更换为 **Maple Mono CN**（v7.9，SIL OFL 开源协议），并作为默认终端字体。
+- 中文 / 英文宽度完美 2:1，连字（ligatures）与 Nerd-Font 图标齐全。
+- 内置 Regular + Bold 两个字重，终端粗体文字使用真实粗体字形而非伪粗。
+- 旧配置中保存的已失效字体（如 Sarasa）会自动回退到 Maple Mono CN。
+
+### 📦 新增跨平台 fat jar
+
+- `./gradlew fatJar` 可打出单一可执行 jar（内含 Windows / macOS / Linux 的 JavaFX 原生库），任意桌面平台 `java -jar` 即可运行，无需安装。
+- CI 与 Release 流程同步发布该 jar 产物。
+
+### 🐛 修复：Windows 下 Ctrl+字母 无法中断远端 shell
+
+- JavaFX 在 Windows 上报空 `text` 的 `Ctrl+字母` 按键事件，导致 `Ctrl+C` 无法打断远端命令。新增按键过滤器把未消费的 `Ctrl+字母` 重新映射为 ASCII 控制字节，与 Linux / macOS 行为一致。
+
+---
+
+## 历史版本
+
+### v1.2.3
 
 ### 🔧 修复：Windows 与 macOS 安装包发布（根治）
 
