@@ -43,8 +43,11 @@
                 <Label fx:id="idleTimeoutHint" text="" style="-fx-text-fill: #888;"/>
             </HBox>
 
-            <Label fx:id="masterPasswordLabel" text="" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
-            <Button fx:id="changeMasterPasswordButton" text="" onAction="#onChangeMasterPassword" GridPane.rowIndex="9" GridPane.columnIndex="1"/>
+            <Label fx:id="selectToCopyLabel" text="" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
+            <CheckBox fx:id="selectToCopyCheckBox" GridPane.rowIndex="9" GridPane.columnIndex="1"/>
+
+            <Label fx:id="masterPasswordLabel" text="" GridPane.rowIndex="10" GridPane.columnIndex="0"/>
+            <Button fx:id="changeMasterPasswordButton" text="" onAction="#onChangeMasterPassword" GridPane.rowIndex="10" GridPane.columnIndex="1"/>
         </GridPane>
     </center>
     <bottom>

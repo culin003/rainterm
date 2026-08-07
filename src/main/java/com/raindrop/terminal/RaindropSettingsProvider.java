@@ -1,5 +1,6 @@
 package com.raindrop.terminal;
 
+import com.raindrop.util.ConfigManager;
 import com.techsenger.jeditermfx.core.TerminalColor;
 import com.techsenger.jeditermfx.core.TextStyle;
 import com.techsenger.jeditermfx.ui.settings.DefaultSettingsProvider;
@@ -78,6 +79,16 @@ public class RaindropSettingsProvider extends DefaultSettingsProvider {
     @Override
     public float getTerminalFontSize() {
         return (float) fontSize;
+    }
+
+    @Override
+    public boolean copyOnSelect() {
+        return ConfigManager.getInstance().getBoolean(ConfigManager.KEY_SELECT_TO_COPY, true);
+    }
+
+    @Override
+    public boolean pasteOnMiddleMouseClick() {
+        return ConfigManager.getInstance().getBoolean(ConfigManager.KEY_SELECT_TO_COPY, true);
     }
 
     private static TerminalColor hexToColor(String hex) {

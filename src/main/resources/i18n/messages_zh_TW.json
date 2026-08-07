@@ -110,6 +110,7 @@
     "default_encoding": "預設編碼",
     "auto_lock_timeout": "自動鎖定逾時（秒）",
     "auto_lock_never": "0 = 永不",
+    "select_to_copy": "選取即複製 / 中鍵貼上",
     "master_password": "主要密碼"
   },
   "errors": {

@@ -7,6 +7,7 @@ import com.raindrop.util.ThemeManager;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Spinner;
@@ -30,6 +31,7 @@ public class SettingsViewController {
     @FXML private Label languageLabel;
     @FXML private Label idleTimeoutLabel;
     @FXML private Label idleTimeoutHint;
+    @FXML private Label selectToCopyLabel;
     @FXML private Label masterPasswordLabel;
     @FXML private Button changeMasterPasswordButton;
     @FXML private Button saveButton;
@@ -43,6 +45,7 @@ public class SettingsViewController {
     @FXML private Spinner<Integer> fontSizeSpinner;
     @FXML private Spinner<Integer> uiFontSizeSpinner;
     @FXML private Spinner<Integer> idleTimeoutSpinner;
+    @FXML private CheckBox selectToCopyCheckBox;
 
     private final ConfigManager config = ConfigManager.getInstance();
     private MainController mainController;
@@ -71,6 +74,8 @@ public class SettingsViewController {
 
         idleTimeoutSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(
             0, 86400, config.getInt(ConfigManager.KEY_AUTO_LOCK_TIMEOUT_SECONDS, 600), 30));
+
+        selectToCopyCheckBox.setSelected(config.getBoolean(ConfigManager.KEY_SELECT_TO_COPY, true));
     }
 
     private void initLabels() {
@@ -84,6 +89,7 @@ public class SettingsViewController {
         languageLabel.setText(I18nManager.t("settings.language"));
         idleTimeoutLabel.setText(I18nManager.t("settings.auto_lock_timeout"));
         idleTimeoutHint.setText(I18nManager.t("settings.auto_lock_never"));
+        selectToCopyLabel.setText(I18nManager.t("settings.select_to_copy"));
         masterPasswordLabel.setText(I18nManager.t("settings.master_password"));
         changeMasterPasswordButton.setText(I18nManager.t("common.change"));
         saveButton.setText(I18nManager.t("common.save"));
@@ -149,6 +155,7 @@ public class SettingsViewController {
         config.set(ConfigManager.KEY_UI_FONT_FAMILY, uiFontFamilyCombo.getValue());
         config.set(ConfigManager.KEY_UI_FONT_SIZE, String.valueOf(uiFontSizeSpinner.getValue()));
         config.set(ConfigManager.KEY_AUTO_LOCK_TIMEOUT_SECONDS, String.valueOf(idleTimeoutSpinner.getValue()));
+        config.set(ConfigManager.KEY_SELECT_TO_COPY, String.valueOf(selectToCopyCheckBox.isSelected()));
 
         // Save language setting
         String newLang = languageCombo.getValue();

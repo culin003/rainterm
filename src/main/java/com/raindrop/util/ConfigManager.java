@@ -155,6 +155,9 @@ public class ConfigManager {
     public static final String KEY_WINDOW_WIDTH = "window_width";
     public static final String KEY_WINDOW_HEIGHT = "window_height";
 
+    // Terminal behavior keys
+    public static final String KEY_SELECT_TO_COPY = "select_to_copy";
+
     // Master password + auto-lock feature keys
     public static final String KEY_MASTER_PASSWORD_VERIFIER = "master_password_verifier";
     public static final String KEY_MASTER_PASSWORD_HINT = "master_password_hint";

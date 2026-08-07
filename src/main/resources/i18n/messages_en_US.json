@@ -110,6 +110,7 @@
     "default_encoding": "Default encoding",
     "auto_lock_timeout": "Auto-lock idle timeout (s)",
     "auto_lock_never": "0 = never",
+    "select_to_copy": "Select to copy / Middle-click paste",
     "master_password": "Master password"
   },
   "errors": {
