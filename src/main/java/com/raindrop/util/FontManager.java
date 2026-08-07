@@ -14,15 +14,19 @@ import java.util.Optional;
  * without a bundled CJK font, the logical "Monospaced" family resolves to a
  * runtime font with no Chinese glyphs and CJK text renders as tofu (boxes).
  *
- * <p>Sarasa Mono SC is a true dual-width monospace with full CJK + Latin coverage,
- * so terminal columns stay aligned while Chinese renders correctly.
+ * <p>Maple Mono CN is a true dual-width monospace (perfect 2:1 CJK:Latin advance)
+ * with full CJK + Latin coverage, ligatures, and Nerd-Font glyphs, so terminal
+ * columns stay aligned while Chinese renders correctly. Regular + Bold weights are
+ * bundled; JediTermFX derives its bold font from the normal family name, so a real
+ * bold TTF means bold terminal text is not faux-bolded.
  */
 public final class FontManager {
 
     /** Embedded family name of the bundled font (from its {@code name} table). */
-    public static final String MONO_CJK_FAMILY = "Sarasa Mono SC";
+    public static final String MONO_CJK_FAMILY = "Maple Mono CN";
 
-    private static final String MONO_CJK_RESOURCE = "/fonts/SarasaMonoSC-Regular.ttf";
+    private static final String MONO_CJK_RESOURCE = "/fonts/MapleMono-CN-Regular.ttf";
+    private static final String MONO_CJK_BOLD_RESOURCE = "/fonts/MapleMono-CN-Bold.ttf";
 
     private static final double MEASURE_SIZE = 14;
 
@@ -40,17 +44,22 @@ public final class FontManager {
         if (loaded) {
             return;
         }
-        try (InputStream in = FontManager.class.getResourceAsStream(MONO_CJK_RESOURCE)) {
+        loadFont(MONO_CJK_RESOURCE);
+        loadFont(MONO_CJK_BOLD_RESOURCE);
+        loaded = true;
+    }
+
+    private static void loadFont(String resource) {
+        try (InputStream in = FontManager.class.getResourceAsStream(resource)) {
             if (in == null) {
-                throw new IllegalStateException("Bundled font not found on classpath: " + MONO_CJK_RESOURCE);
+                throw new IllegalStateException("Bundled font not found on classpath: " + resource);
             }
             Font font = Font.loadFont(in, 12);
             if (font == null) {
-                throw new IllegalStateException("JavaFX failed to load bundled font: " + MONO_CJK_RESOURCE);
+                throw new IllegalStateException("JavaFX failed to load bundled font: " + resource);
             }
-            loaded = true;
         } catch (Exception e) {
-            throw new RuntimeException("Unable to load bundled CJK font", e);
+            throw new RuntimeException("Unable to load bundled CJK font: " + resource, e);
         }
     }
 

@@ -3,7 +3,7 @@
  * Matches TerminalTheme.DARK (#1e1e1e / #cccccc)
  */
 .root {
-    -fx-font-family: "Sarasa Mono SC", "Monospaced", sans-serif;
+    -fx-font-family: "Maple Mono CN", "Monospaced", sans-serif;
     -fx-base: #1e1e1e;
     -fx-background: #1e1e1e;
     -fx-control-inner-background: #252526;

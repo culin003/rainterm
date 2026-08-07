@@ -9,6 +9,7 @@ import com.raindrop.terminal.RaindropSettingsProvider;
 import com.raindrop.terminal.SshTtyConnector;
 import com.raindrop.terminal.TerminalTheme;
 import com.raindrop.util.ConfigManager;
+import com.raindrop.util.FontManager;
 import com.raindrop.util.I18nManager;
 import com.techsenger.jeditermfx.ui.JediTermFxWidget;
 import javafx.application.Platform;
@@ -72,7 +73,7 @@ public class TabManager {
     private void openTabJediTermFx(ConnectionProfile profile, ConfigManager cfg, Tab existingTab) {
         TerminalTheme theme = resolveTheme(cfg.get(ConfigManager.KEY_TERMINAL_THEME, "dark"));
         double fontSize = cfg.getInt(ConfigManager.KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
-        String fontFamily = cfg.get(ConfigManager.KEY_TERMINAL_FONT_FAMILY, "");
+        String fontFamily = cfg.get(ConfigManager.KEY_TERMINAL_FONT_FAMILY, FontManager.MONO_CJK_FAMILY);
         final Charset effectiveCharset = resolveCharset(profile, cfg);
 
         RaindropSettingsProvider settings = new RaindropSettingsProvider(theme, fontSize, fontFamily);

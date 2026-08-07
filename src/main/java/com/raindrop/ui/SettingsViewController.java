@@ -113,7 +113,7 @@ public class SettingsViewController {
         List<String> monoFamilies = FontManager.monospaceFamilies();
         fontFamilyCombo.setItems(FXCollections.observableArrayList(monoFamilies));
         fontFamilyCombo.setValue(FontManager.resolveTerminalFamily(
-            config.get(ConfigManager.KEY_TERMINAL_FONT_FAMILY, "")));
+            config.get(ConfigManager.KEY_TERMINAL_FONT_FAMILY, FontManager.MONO_CJK_FAMILY)));
 
         // Blank = "inherit from the theme stylesheet"; shown as a localized placeholder.
         List<String> uiFamilies = new ArrayList<>();

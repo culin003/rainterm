@@ -3,7 +3,7 @@
  * Matches TerminalTheme.SOLARIZED_DARK (#002b36 / #839496)
  */
 .root {
-    -fx-font-family: "Sarasa Mono SC", "Monospaced", sans-serif;
+    -fx-font-family: "Maple Mono CN", "Monospaced", sans-serif;
     -fx-base: #002b36;
     -fx-background: #002b36;
     -fx-control-inner-background: #073642;

@@ -3,7 +3,7 @@
  * Matches TerminalTheme.GREEN_ON_BLACK (#000000 / #00ff00)
  */
 .root {
-    -fx-font-family: "Sarasa Mono SC", "Monospaced", sans-serif;
+    -fx-font-family: "Maple Mono CN", "Monospaced", sans-serif;
     -fx-base: #000000;
     -fx-background: #000000;
     -fx-control-inner-background: #0a1a0a;
@@ -30,7 +30,7 @@
     -fx-text-fill: #00ff00;
     -fx-background-radius: 0;
     -fx-border-radius: 0;
-    -fx-font-family: "Sarasa Mono SC", 'Monospaced';
+    -fx-font-family: "Maple Mono CN", 'Monospaced';
     -fx-background-color: #103010;
 }
 .button:pressed {
@@ -51,7 +51,7 @@
     -fx-border-color: #004400;
     -fx-border-radius: 0;
     -fx-background-radius: 0;
-    -fx-font-family: "Sarasa Mono SC", 'Monospaced';
+    -fx-font-family: "Maple Mono CN", 'Monospaced';
 }
 .text-field:focused, .password-field:focused, .combo-box:focused,
 .choice-box:focused, .spinner:focused {
