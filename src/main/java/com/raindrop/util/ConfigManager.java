@@ -163,4 +163,7 @@ public class ConfigManager {
     public static final String KEY_MASTER_PASSWORD_HINT = "master_password_hint";
     public static final String KEY_MASTER_PASSWORD_KDF_VERSION = "master_password_kdf_version";
     public static final String KEY_AUTO_LOCK_TIMEOUT_SECONDS = "auto_lock_timeout_seconds";
+
+    // Onboarding keys
+    public static final String KEY_TAB_DRAG_TIP_DISMISSED = "tab_drag_tip_dismissed";
 }

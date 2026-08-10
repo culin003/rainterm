@@ -27,7 +27,7 @@
         <SplitPane fx:id="mainSplit">
             <items>
                 <fx:include fx:id="sessionList" source="SessionListPane.fxml"/>
-                <TabPane fx:id="tabPane" tabClosingPolicy="ALL_TABS"/>
+                <com.raindrop.ui.TerminalSplitArea fx:id="terminalSplitArea"/>
             </items>
         </SplitPane>
     </center>

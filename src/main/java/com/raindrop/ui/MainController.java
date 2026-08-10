@@ -41,7 +41,7 @@ import java.io.IOException;
 public class MainController {
     private static final String KEY_SIDEBAR_VISIBLE = "sidebar_visible";
 
-    @FXML private TabPane tabPane;
+    @FXML private TerminalSplitArea terminalSplitArea;
     @FXML private Label statusLabel;
     @FXML private Label memoryLabel;
     @FXML private ProgressBar memoryBar;
@@ -76,7 +76,8 @@ public class MainController {
 
     @FXML
     public void initialize() {
-        tabManager = new TabManager(tabPane, connectionManager, this);
+        tabManager = new TabManager(terminalSplitArea, connectionManager, this);
+        terminalSplitArea.setHost(tabManager);
         if (sessionList != null) {
             SplitPane.setResizableWithParent(sessionList, false);
         }
@@ -113,7 +114,7 @@ public class MainController {
     }
 
     private void installAccelerators() {
-        Scene scene = tabPane.getScene();
+        Scene scene = terminalSplitArea.getScene();
         if (scene == null) return;
         var acc = scene.getAccelerators();
         // SHORTCUT_DOWN maps to Cmd on macOS, Ctrl elsewhere.
@@ -185,22 +186,18 @@ public class MainController {
     }
 
     private void closeCurrentTab() {
-        Tab current = tabPane.getSelectionModel().getSelectedItem();
+        Tab current = terminalSplitArea.getSelectedTab();
         if (current != null && current.isClosable()) {
             tabManager.closeTab(current);
         }
     }
 
     private void cycleTabs(int direction) {
-        int size = tabPane.getTabs().size();
-        if (size <= 1) return;
-        int idx = tabPane.getSelectionModel().getSelectedIndex();
-        int next = ((idx + direction) % size + size) % size;
-        tabPane.getSelectionModel().select(next);
+        terminalSplitArea.selectNext(direction);
     }
 
     private void duplicateCurrentTab() {
-        Tab current = tabPane.getSelectionModel().getSelectedItem();
+        Tab current = terminalSplitArea.getSelectedTab();
         if (current == null) return;
         com.raindrop.storage.ConnectionProfile profile = tabManager.getTabProfile(current);
         if (profile != null) tabManager.openTab(profile);
@@ -211,23 +208,17 @@ public class MainController {
     }
 
     private void reconnectCurrentTab() {
-        Tab current = tabPane.getSelectionModel().getSelectedItem();
+        Tab current = terminalSplitArea.getSelectedTab();
         if (current == null) return;
         tabManager.reconnectTab(current);
     }
 
     private void switchTabRelative(int delta) {
-        int size = tabPane.getTabs().size();
-        if (size <= 1) return;
-        int idx = tabPane.getSelectionModel().getSelectedIndex();
-        int next = ((idx + delta) % size + size) % size;
-        tabPane.getSelectionModel().select(next);
+        terminalSplitArea.selectNext(delta);
     }
 
     private void selectTab(int index) {
-        if (index < tabPane.getTabs().size()) {
-            tabPane.getSelectionModel().select(index);
-        }
+        terminalSplitArea.selectIndex(index);
     }
 
     private void startMemoryMonitor() {
@@ -583,8 +574,8 @@ public class MainController {
         if (lockOverlay != null) lockOverlay.setVisible(false);
         Node main = sceneRoot.getChildren().isEmpty() ? null : sceneRoot.getChildren().get(0);
         if (main != null) main.setDisable(false);
-        if (tabPane != null && !tabPane.getTabs().isEmpty()) {
-            Tab sel = tabPane.getSelectionModel().getSelectedItem();
+        if (terminalSplitArea != null && terminalSplitArea.getTabCount() > 0) {
+            Tab sel = terminalSplitArea.getSelectedTab();
             if (sel != null && sel.getContent() != null) {
                 sel.getContent().requestFocus();
             }

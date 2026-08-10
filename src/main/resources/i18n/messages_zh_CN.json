@@ -221,7 +221,8 @@
     "page_up": "向上翻页",
     "page_down": "向下翻页",
     "line_up": "向上一行",
-    "line_down": "向下一行"
+    "line_down": "向下一行",
+    "drag_tip": "提示：拖拽标签页到边缘即可分屏"
   },
   "tab": {
     "duplicate": "复制",

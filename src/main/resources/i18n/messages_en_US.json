@@ -221,7 +221,8 @@
     "page_up": "Page Up",
     "page_down": "Page Down",
     "line_up": "Line Up",
-    "line_down": "Line Down"
+    "line_down": "Line Down",
+    "drag_tip": "Tip: drag a tab to the edge to split the view"
   },
   "tab": {
     "duplicate": "Duplicate",

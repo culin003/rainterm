@@ -44,12 +44,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>On disconnect the tab is replaced with a "Connection lost — Reconnect" panel;
  * clicking Reconnect rebuilds the session and re-attaches the widget.
  */
-public class TabManager {
+public class TabManager implements TerminalAreaHost {
     public static final int MIN_FONT_SIZE = 8;
     public static final int MAX_FONT_SIZE = 32;
     public static final int DEFAULT_FONT_SIZE = 14;
 
-    private final TabPane tabPane;
+    private final TerminalSplitArea terminalSplitArea;
     private final ConnectionManager connectionManager;
     private final MainController mainController;
     private final Map<Tab, JediTermFxWidget> widgets = new ConcurrentHashMap<>();
@@ -57,20 +57,21 @@ public class TabManager {
     private final Map<Tab, RaindropSettingsProvider> tabSettings = new ConcurrentHashMap<>();
     private final Map<Tab, SshSession> connectingSessions = new ConcurrentHashMap<>();
 
-    public TabManager(TabPane tabPane, ConnectionManager connectionManager, MainController mainController) {
-        this.tabPane = tabPane;
+    public TabManager(TerminalSplitArea terminalSplitArea, ConnectionManager connectionManager, MainController mainController) {
+        this.terminalSplitArea = terminalSplitArea;
         this.connectionManager = connectionManager;
         this.mainController = mainController;
     }
 
     public void openTab(ConnectionProfile profile) {
-        openTabJediTermFx(profile, ConfigManager.getInstance(), null);
+        openTabJediTermFx(profile, ConfigManager.getInstance(), null, terminalSplitArea.getActiveTabPane());
     }
 
     /**
      * @param existingTab when non-null this is a reconnect: reuse the tab instead of appending a new one.
+     * @param targetPane  the {@link TabPane} to append a new tab into (unused when {@code existingTab} is set).
      */
-    private void openTabJediTermFx(ConnectionProfile profile, ConfigManager cfg, Tab existingTab) {
+    private void openTabJediTermFx(ConnectionProfile profile, ConfigManager cfg, Tab existingTab, TabPane targetPane) {
         TerminalTheme theme = resolveTheme(cfg.get(ConfigManager.KEY_TERMINAL_THEME, "dark"));
         double fontSize = cfg.getInt(ConfigManager.KEY_FONT_SIZE, DEFAULT_FONT_SIZE);
         String fontFamily = cfg.get(ConfigManager.KEY_TERMINAL_FONT_FAMILY, FontManager.MONO_CJK_FAMILY);
@@ -102,8 +103,12 @@ public class TabManager {
             tab.setClosable(true);
             tab.setOnClosed(e -> closeTabResources(tab));
             setupTabContextMenu(tab);
-            tabPane.getTabs().add(tab);
-            tabPane.getSelectionModel().select(tab);
+            if (targetPane == null) {
+                terminalSplitArea.addTab(tab);
+            } else {
+                targetPane.getTabs().add(tab);
+                targetPane.getSelectionModel().select(tab);
+            }
         }
         tabProfile.put(tab, profile);
         tabSettings.put(tab, settings);
@@ -171,7 +176,9 @@ public class TabManager {
         if (w != null) try { w.close(); } catch (Exception ignored) {}
         SshSession old = connectionManager.unregister(tab);
         if (old != null) try { old.disconnect(); } catch (Exception ignored) {}
-        openTabJediTermFx(profile, ConfigManager.getInstance(), tab);
+        TabGroupPane group = terminalSplitArea.getGroupOfTab(tab);
+        TabPane targetPane = group != null ? group.getTabPane() : terminalSplitArea.getActiveTabPane();
+        openTabJediTermFx(profile, ConfigManager.getInstance(), tab, targetPane);
     }
 
     private Parent disconnectedPanel(ConnectionProfile profile, String message, Tab tab) {
@@ -232,17 +239,17 @@ public class TabManager {
 
     public void closeTab(Tab tab) {
         closeTabResources(tab);
-        tabPane.getTabs().remove(tab);
+        terminalSplitArea.removeTab(tab);
     }
 
     public void closeAllTabs() {
-        for (Tab tab : new ArrayList<>(tabPane.getTabs())) {
+        for (Tab tab : new ArrayList<>(terminalSplitArea.getAllTabs())) {
             closeTabResources(tab);
         }
         widgets.clear();
         tabProfile.clear();
         tabSettings.clear();
-        tabPane.getTabs().clear();
+        terminalSplitArea.clearAllTabs();
     }
 
     public SshSession getSession(Tab tab) {
@@ -250,7 +257,7 @@ public class TabManager {
     }
 
     public Tab getCurrentTab() {
-        return tabPane.getSelectionModel().getSelectedItem();
+        return terminalSplitArea.getSelectedTab();
     }
 
     public int getActiveTabCount() {
@@ -259,6 +266,12 @@ public class TabManager {
 
     public com.raindrop.storage.ConnectionProfile getTabProfile(Tab tab) {
         return tabProfile.get(tab);
+    }
+
+    /** SFTP browser tabs are never in the {@link #widgets} map, so they can't trigger splits. */
+    @Override
+    public boolean isTerminalTab(Tab tab) {
+        return widgets.containsKey(tab);
     }
 
     /**
@@ -365,8 +378,7 @@ public class TabManager {
             tab.setContent(root);
             tab.setClosable(true);
             tab.setOnClosed(e -> controller.cleanup());
-            tabPane.getTabs().add(tab);
-            tabPane.getSelectionModel().select(tab);
+            terminalSplitArea.addTabToGroup(tab, terminalSplitArea.getGroupOfTab(targetTab));
             return true;
         } catch (IOException e) {
             mainController.showError("Failed to open SFTP: " + e.getMessage());

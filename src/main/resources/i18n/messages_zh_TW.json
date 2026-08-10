@@ -221,7 +221,8 @@
     "page_up": "向上翻頁",
     "page_down": "向下翻頁",
     "line_up": "向上一行",
-    "line_down": "向下一行"
+    "line_down": "向下一行",
+    "drag_tip": "提示：拖曳標籤頁到邊緣即可分割畫面"
   },
   "tab": {
     "duplicate": "複製",
