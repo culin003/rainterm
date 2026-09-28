@@ -42,11 +42,11 @@ javafx {
 
 dependencies {
     // SSH/SFTP — 0.40.0 is the latest published release as of this writing.
-    implementation("com.hierynomus:sshj:0.40.0")
-    implementation("org.slf4j:slf4j-simple:2.0.9")
+    implementation("com.hierynomus:sshj:0.41.1")
+    implementation("org.slf4j:slf4j-simple:2.0.20")
 
     // SQLite
-    implementation("org.xerial:sqlite-jdbc:3.46.1.3")
+    implementation("org.xerial:sqlite-jdbc:3.53.4.0")
 
     // Encryption
     implementation("org.jasypt:jasypt:1.9.3")
@@ -56,7 +56,7 @@ dependencies {
     implementation("org.kordamp.ikonli:ikonli-fontawesome5-pack:12.4.0")
 
     // JSON parsing for i18n
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.18.2")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.22.3")
 
     // JavaFX terminal emulator (Canvas-based port of JediTerm)
     implementation("com.techsenger.jeditermfx:jeditermfx-ui:1.1.0") {
@@ -71,7 +71,7 @@ dependencies {
 
     // Architectural rules — enforce project invariants (virtual threads, no HashMap,
     // no banned APIs). See ArchRulesTest.
-    testImplementation("com.tngtech.archunit:archunit-junit5:1.3.0")
+    testImplementation("com.tngtech.archunit:archunit-junit5:1.5.0")
 }
 
 application {
